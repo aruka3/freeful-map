@@ -65,17 +65,13 @@ export default function NewRestaurantPage() {
     try {
       const res = await fetch(`/api/geocode?q=${encodeURIComponent(form.address)}`)
       const data = await res.json()
-      if (!res.ok) {
-        setGeoError(data.error || '座標の取得に失敗しました')
+      if (!res.ok || data.error) {
+        setGeoError('住所から座標を取得できませんでした。都道府県から入力するか、下の欄に手動入力してください。')
         return
       }
-      if (Array.isArray(data) && data.length > 0) {
-        set('lat', parseFloat(data[0].lat))
-        set('lng', parseFloat(data[0].lon))
-        setGeoSuccess(true)
-      } else {
-        setGeoError('住所から座標を取得できませんでした。別の表記で試すか、下の欄に手動入力してください。')
-      }
+      set('lat', data.lat)
+      set('lng', data.lng)
+      setGeoSuccess(true)
     } catch {
       setGeoError('座標の取得に失敗しました。ネットワーク接続を確認してください。')
     }
