@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { fetchRestaurant, deleteRestaurant } from '@/lib/supabase'
-import { isOwner } from '@/lib/session'
 import { STATUS_CONFIG, TAG_CONFIG } from '@/utils/constants'
 import type { Restaurant } from '@/types'
 
@@ -39,7 +38,6 @@ export default function RestaurantDetailPage() {
   if (!restaurant) return null
 
   const statusConfig = STATUS_CONFIG[restaurant.status]
-  const owner = isOwner(restaurant.session_id)
 
   return (
     <div className="min-h-screen bg-stone-50 pb-safe">
@@ -53,23 +51,21 @@ export default function RestaurantDetailPage() {
             </Link>
             <h1 className="font-bold text-stone-800 truncate">{restaurant.name}</h1>
           </div>
-          {owner && (
-            <div className="flex gap-2 shrink-0">
-              <Link
-                href={`/restaurants/${id}/edit`}
-                className="text-xs font-medium text-emerald-600 hover:text-emerald-700 px-3 py-1.5 rounded-lg hover:bg-emerald-50 transition-colors"
-              >
-                編集
-              </Link>
-              <button
-                onClick={handleDelete}
-                disabled={deleting}
-                className="text-xs font-medium text-rose-500 hover:text-rose-600 px-3 py-1.5 rounded-lg hover:bg-rose-50 transition-colors"
-              >
-                {deleting ? '削除中…' : '削除'}
-              </button>
-            </div>
-          )}
+          <div className="flex gap-2 shrink-0">
+            <Link
+              href={`/restaurants/${id}/edit`}
+              className="text-xs font-medium text-emerald-600 hover:text-emerald-700 px-3 py-1.5 rounded-lg hover:bg-emerald-50 transition-colors"
+            >
+              編集
+            </Link>
+            <button
+              onClick={handleDelete}
+              disabled={deleting}
+              className="text-xs font-medium text-rose-500 hover:text-rose-600 px-3 py-1.5 rounded-lg hover:bg-rose-50 transition-colors"
+            >
+              {deleting ? '削除中…' : '削除'}
+            </button>
+          </div>
         </div>
       </header>
 

@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { fetchRestaurant, updateRestaurant } from '@/lib/supabase'
-import { isOwner } from '@/lib/session'
 import FieldLabel, { Input, Textarea } from '@/components/form/FieldLabel'
 import { TAG_CONFIG, ALL_TAGS } from '@/utils/constants'
 import type { RestaurantStatus } from '@/types'
@@ -30,7 +29,6 @@ export default function EditRestaurantPage() {
     fetchRestaurant(id)
       .then((r) => {
         if (!r) { router.push('/'); return }
-        if (!isOwner(r.session_id)) { router.push(`/restaurants/${id}`); return }
         setName(r.name)
         setAddress(r.address)
         setLat(r.lat)
