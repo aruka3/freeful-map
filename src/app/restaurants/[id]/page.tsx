@@ -74,23 +74,11 @@ export default function RestaurantDetailPage() {
       </header>
 
       <div className="max-w-lg mx-auto px-4 py-5 space-y-4">
-        {/* 写真 */}
-        {restaurant.photo_url && (
-          <img
-            src={restaurant.photo_url}
-            alt={restaurant.name}
-            className="w-full h-52 object-cover rounded-2xl"
-          />
-        )}
-
         {/* 基本情報カード */}
         <Card>
           <div className="flex items-start justify-between gap-3 mb-3">
             <div>
               <h2 className="text-xl font-bold text-stone-800">{restaurant.name}</h2>
-              {restaurant.genre && (
-                <p className="text-sm text-stone-500 mt-0.5">{restaurant.genre}</p>
-              )}
             </div>
             <span
               className={`shrink-0 text-xs font-medium px-3 py-1 rounded-full ${statusConfig.bgColor} ${statusConfig.textColor}`}
@@ -106,9 +94,12 @@ export default function RestaurantDetailPage() {
             {restaurant.address}
           </p>
           {restaurant.comment && (
-            <p className="mt-3 text-sm text-stone-600 bg-stone-50 rounded-xl p-3">
-              {restaurant.comment}
-            </p>
+            <div className="mt-3">
+              <p className="text-xs text-stone-400 mb-1">体験メモ</p>
+              <p className="text-sm text-stone-600 bg-stone-50 rounded-xl p-3">
+                {restaurant.comment}
+              </p>
+            </div>
           )}
         </Card>
 

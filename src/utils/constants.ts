@@ -65,23 +65,5 @@ export const CHECK_LEVEL_CONFIG: Record<CheckLevel, { label: string }> = {
   unchecked: { label: '未確認' },
 }
 
-export const GENRE_OPTIONS = [
-  '和食',
-  '洋食',
-  '中華',
-  'イタリアン',
-  'フレンチ',
-  '居酒屋',
-  'カフェ',
-  'ラーメン',
-  'そば・うどん',
-  '焼肉・BBQ',
-  '寿司',
-  'ベジタリアン・ヴィーガン',
-  'グルテンフリー専門',
-  'カレー',
-  'その他',
-]
-
 export const DEFAULT_CENTER: [number, number] = [35.6762, 139.6503] // 東京
 export const DEFAULT_ZOOM = 13

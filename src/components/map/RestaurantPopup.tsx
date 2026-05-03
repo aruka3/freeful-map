@@ -22,7 +22,6 @@ export default function RestaurantPopup({ restaurant, onClose }: RestaurantPopup
         <div className="flex items-start justify-between gap-3 mb-3">
           <div>
             <h2 className="text-lg font-bold text-stone-800 leading-tight">{restaurant.name}</h2>
-            <p className="text-sm text-stone-500 mt-0.5">{restaurant.genre}</p>
           </div>
           <span
             className={`shrink-0 text-xs font-medium px-2.5 py-1 rounded-full ${statusConfig.bgColor} ${statusConfig.textColor}`}

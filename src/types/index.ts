@@ -19,9 +19,7 @@ export interface Restaurant {
   address: string
   lat: number
   lng: number
-  genre: string | null
   comment: string | null
-  photo_url: string | null
 
   // ステータス
   status: RestaurantStatus

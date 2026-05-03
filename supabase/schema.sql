@@ -11,9 +11,8 @@ create table if not exists restaurants (
   address text not null,
   lat double precision not null,
   lng double precision not null,
-  genre text,
   comment text,
-  photo_url text,
+  -- tags text[] -- 将来のタグ機能用（複数選択）
 
   -- ステータス
   status text not null default 'want_to_visit'

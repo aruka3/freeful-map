@@ -5,10 +5,10 @@ import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { fetchRestaurant, updateRestaurant } from '@/lib/supabase'
 import { isOwner } from '@/lib/session'
-import FieldLabel, { Input, Textarea, Select } from '@/components/form/FieldLabel'
+import FieldLabel, { Input, Textarea } from '@/components/form/FieldLabel'
 import DietaryLevelSelect from '@/components/form/DietaryLevelSelect'
 import StatusSelect from '@/components/form/StatusSelect'
-import { GENRE_OPTIONS, CHECK_LEVEL_CONFIG } from '@/utils/constants'
+import { CHECK_LEVEL_CONFIG } from '@/utils/constants'
 import type { Restaurant, DietaryLevel, RestaurantStatus, CheckLevel } from '@/types'
 
 export default function EditRestaurantPage() {
@@ -48,9 +48,7 @@ export default function EditRestaurantPage() {
         address: form.address,
         lat: form.lat!,
         lng: form.lng!,
-        genre: form.genre || null,
         comment: form.comment || null,
-        photo_url: form.photo_url || null,
         status: form.status!,
         gluten_free: form.gluten_free!,
         casein_free: form.casein_free!,
@@ -124,31 +122,12 @@ export default function EditRestaurantPage() {
                 />
               </div>
               <div>
-                <FieldLabel>ジャンル</FieldLabel>
-                <Select
-                  value={form.genre ?? ''}
-                  onChange={(e) => set('genre', e.target.value as Restaurant['genre'])}
-                >
-                  <option value="">選択してください</option>
-                  {GENRE_OPTIONS.map((g) => (
-                    <option key={g} value={g}>{g}</option>
-                  ))}
-                </Select>
-              </div>
-              <div>
-                <FieldLabel>写真URL</FieldLabel>
-                <Input
-                  value={form.photo_url ?? ''}
-                  onChange={(e) => set('photo_url', e.target.value)}
-                  type="url"
-                />
-              </div>
-              <div>
-                <FieldLabel>コメント</FieldLabel>
+                <FieldLabel>体験メモ</FieldLabel>
                 <Textarea
                   value={form.comment ?? ''}
                   onChange={(e) => set('comment', e.target.value)}
-                  rows={3}
+                  rows={4}
+                  placeholder="訪問した感想、雰囲気、気づいたことなど"
                 />
               </div>
             </div>
