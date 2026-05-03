@@ -23,14 +23,14 @@ export default function EditRestaurantPage() {
   const [tags, setTags] = useState<string[]>([])
   const [comment, setComment] = useState('')
   const [sessionId, setSessionId] = useState('')
+  const [geoLoading, setGeoLoading] = useState(false)
+  const [geoMsg, setGeoMsg] = useState<{ type: 'ok' | 'error'; text: string } | null>(null)
 
   useEffect(() => {
     fetchRestaurant(id)
       .then((r) => {
-        if (!r || !isOwner(r.session_id)) {
-          router.push(`/restaurants/${id}`)
-          return
-        }
+        if (!r) { router.push('/'); return }
+        if (!isOwner(r.session_id)) { router.push(`/restaurants/${id}`); return }
         setName(r.name)
         setAddress(r.address)
         setLat(r.lat)
@@ -40,8 +40,29 @@ export default function EditRestaurantPage() {
         setComment(r.comment ?? '')
         setSessionId(r.session_id)
       })
+      .catch(() => router.push('/'))
       .finally(() => setLoading(false))
   }, [id, router])
+
+  const geocode = async () => {
+    if (!address.trim()) return
+    setGeoLoading(true)
+    setGeoMsg(null)
+    try {
+      const res = await fetch(`/api/geocode?q=${encodeURIComponent(address)}`)
+      const data = await res.json()
+      if (!res.ok || data.error) {
+        setGeoMsg({ type: 'error', text: '座標を取得できませんでした。手動で確認してください。' })
+        return
+      }
+      setLat(data.lat)
+      setLng(data.lng)
+      setGeoMsg({ type: 'ok', text: `座標を更新しました（${data.lat.toFixed(4)}, ${data.lng.toFixed(4)}）` })
+    } catch {
+      setGeoMsg({ type: 'error', text: '座標の取得に失敗しました。' })
+    }
+    setGeoLoading(false)
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -63,8 +84,9 @@ export default function EditRestaurantPage() {
         session_id: sessionId,
       })
       router.push(`/restaurants/${id}`)
-    } catch {
-      setError('更新に失敗しました。')
+    } catch (err) {
+      console.error(err)
+      setError('更新に失敗しました。Supabaseで「ALTER TABLE restaurants ADD COLUMN IF NOT EXISTS tags text[] default \'{}\'」を実行してから再試行してください。')
     }
     setSubmitting(false)
   }
@@ -103,9 +125,47 @@ export default function EditRestaurantPage() {
             <Input value={name} onChange={(e) => setName(e.target.value)} required />
           </div>
 
+          {/* 住所＋座標取得 */}
           <div>
             <FieldLabel required>住所</FieldLabel>
-            <Input value={address} onChange={(e) => setAddress(e.target.value)} required />
+            <div className="flex gap-2">
+              <Input
+                value={address}
+                onChange={(e) => { setAddress(e.target.value); setGeoMsg(null) }}
+                required
+                className="flex-1"
+              />
+              <button
+                type="button"
+                onClick={geocode}
+                disabled={geoLoading || !address.trim()}
+                className="shrink-0 bg-stone-100 hover:bg-stone-200 disabled:opacity-40 text-stone-600 text-xs font-medium px-3 py-2 rounded-xl transition-colors whitespace-nowrap"
+              >
+                {geoLoading ? (
+                  <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.4 0 0 5.4 0 12h4z"/>
+                  </svg>
+                ) : '座標再取得'}
+              </button>
+            </div>
+            {geoMsg?.type === 'ok' && (
+              <p className="text-xs text-emerald-600 mt-1.5 flex items-center gap-1">
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+                {geoMsg.text}
+              </p>
+            )}
+            {geoMsg?.type === 'error' && (
+              <p className="text-xs text-amber-600 mt-1.5">{geoMsg.text}</p>
+            )}
+            {!geoMsg && lat !== 0 && (
+              <p className="text-xs text-stone-400 mt-1.5">
+                現在の座標: {lat.toFixed(4)}, {lng.toFixed(4)}
+                {' — '}住所を変更した場合は「座標再取得」を押してください
+              </p>
+            )}
           </div>
 
           <div>
@@ -146,9 +206,7 @@ export default function EditRestaurantPage() {
                   <button
                     key={tag}
                     type="button"
-                    onClick={() =>
-                      setTags(active ? tags.filter((t) => t !== tag) : [...tags, tag])
-                    }
+                    onClick={() => setTags(active ? tags.filter((t) => t !== tag) : [...tags, tag])}
                     className={`flex-1 py-3 rounded-xl border-2 text-sm font-semibold transition-all ${
                       active
                         ? 'border-emerald-400 bg-emerald-50 text-emerald-700'
