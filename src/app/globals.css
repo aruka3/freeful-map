@@ -1,0 +1,46 @@
+@import "tailwindcss";
+
+:root {
+  --font-sans: var(--font-noto-sans-jp), 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
+}
+
+html,
+body {
+  height: 100%;
+  font-family: var(--font-sans);
+  background-color: #fafaf9; /* stone-50 */
+  color: #1c1917; /* stone-900 */
+}
+
+/* Leaflet カスタマイズ */
+.leaflet-tooltip-custom {
+  background: white;
+  border: 1px solid #e7e5e4;
+  border-radius: 8px;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #44403c;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+}
+
+.leaflet-tooltip-custom::before {
+  display: none;
+}
+
+/* セーフエリア対応 */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* スクロールバー */
+::-webkit-scrollbar {
+  width: 4px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #d6d3d1;
+  border-radius: 2px;
+}
