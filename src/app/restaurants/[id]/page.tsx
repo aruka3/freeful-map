@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { fetchRestaurant, deleteRestaurant } from '@/lib/supabase'
 import { isOwner } from '@/lib/session'
-import { STATUS_CONFIG } from '@/utils/constants'
+import { STATUS_CONFIG, TAG_CONFIG } from '@/utils/constants'
 import type { Restaurant } from '@/types'
 
 export default function RestaurantDetailPage() {
@@ -89,6 +89,16 @@ export default function RestaurantDetailPage() {
             </svg>
             {restaurant.address}
           </p>
+
+          {restaurant.tags?.length > 0 && (
+            <div className="flex gap-1.5 mt-3 flex-wrap">
+              {restaurant.tags.map((tag) => (
+                <span key={tag} className="text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-700">
+                  {TAG_CONFIG[tag]?.short ?? tag}
+                </span>
+              ))}
+            </div>
+          )}
 
           {restaurant.comment && (
             <div className="mt-4">

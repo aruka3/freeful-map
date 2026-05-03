@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { fetchRestaurant, updateRestaurant } from '@/lib/supabase'
 import { isOwner } from '@/lib/session'
 import FieldLabel, { Input, Textarea } from '@/components/form/FieldLabel'
+import { TAG_CONFIG, ALL_TAGS } from '@/utils/constants'
 import type { RestaurantStatus } from '@/types'
 
 export default function EditRestaurantPage() {
@@ -19,6 +20,7 @@ export default function EditRestaurantPage() {
   const [lat, setLat] = useState(0)
   const [lng, setLng] = useState(0)
   const [status, setStatus] = useState<RestaurantStatus>('want_to_visit')
+  const [tags, setTags] = useState<string[]>([])
   const [comment, setComment] = useState('')
   const [sessionId, setSessionId] = useState('')
 
@@ -34,6 +36,7 @@ export default function EditRestaurantPage() {
         setLat(r.lat)
         setLng(r.lng)
         setStatus(r.status)
+        setTags(r.tags ?? [])
         setComment(r.comment ?? '')
         setSessionId(r.session_id)
       })
@@ -56,6 +59,7 @@ export default function EditRestaurantPage() {
         lng,
         comment: comment.trim() || null,
         status,
+        tags,
         session_id: sessionId,
       })
       router.push(`/restaurants/${id}`)
@@ -128,6 +132,35 @@ export default function EditRestaurantPage() {
                 </button>
               ))}
             </div>
+          </div>
+
+          <div>
+            <FieldLabel>
+              対応タグ
+              <span className="text-stone-400 font-normal text-xs ml-2">複数選択可</span>
+            </FieldLabel>
+            <div className="flex gap-2">
+              {ALL_TAGS.map((tag) => {
+                const active = tags.includes(tag)
+                return (
+                  <button
+                    key={tag}
+                    type="button"
+                    onClick={() =>
+                      setTags(active ? tags.filter((t) => t !== tag) : [...tags, tag])
+                    }
+                    className={`flex-1 py-3 rounded-xl border-2 text-sm font-semibold transition-all ${
+                      active
+                        ? 'border-emerald-400 bg-emerald-50 text-emerald-700'
+                        : 'border-stone-200 bg-white text-stone-400 hover:border-stone-300'
+                    }`}
+                  >
+                    {TAG_CONFIG[tag].short}
+                  </button>
+                )
+              })}
+            </div>
+            <p className="text-xs text-stone-400 mt-1.5">GF: グルテンフリー　CF: カゼインフリー　SF: 白砂糖フリー</p>
           </div>
 
           <div>

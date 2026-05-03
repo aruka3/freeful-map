@@ -10,6 +10,7 @@ export interface Restaurant {
   lng: number
   comment: string | null
   status: RestaurantStatus
+  tags: string[]
   session_id: string
 }
 

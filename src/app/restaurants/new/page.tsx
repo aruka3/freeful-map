@@ -6,6 +6,7 @@ import Link from 'next/link'
 import FieldLabel, { Input, Textarea } from '@/components/form/FieldLabel'
 import { createRestaurant } from '@/lib/supabase'
 import { getSessionId } from '@/lib/session'
+import { TAG_CONFIG, ALL_TAGS } from '@/utils/constants'
 import type { RestaurantStatus } from '@/types'
 
 const DEFAULT_LAT = 35.6762
@@ -18,6 +19,7 @@ export default function NewRestaurantPage() {
   const [lat, setLat] = useState(DEFAULT_LAT)
   const [lng, setLng] = useState(DEFAULT_LNG)
   const [status, setStatus] = useState<RestaurantStatus>('want_to_visit')
+  const [tags, setTags] = useState<string[]>([])
   const [comment, setComment] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [geoLoading, setGeoLoading] = useState(false)
@@ -61,6 +63,7 @@ export default function NewRestaurantPage() {
         lng,
         comment: comment.trim() || null,
         status,
+        tags,
         session_id: getSessionId(),
       })
       router.push(`/restaurants/${restaurant.id}`)
@@ -192,6 +195,36 @@ export default function NewRestaurantPage() {
                 </button>
               ))}
             </div>
+          </div>
+
+          {/* タグ */}
+          <div>
+            <FieldLabel>
+              対応タグ
+              <span className="text-stone-400 font-normal text-xs ml-2">任意・複数選択可</span>
+            </FieldLabel>
+            <div className="flex gap-2">
+              {ALL_TAGS.map((tag) => {
+                const active = tags.includes(tag)
+                return (
+                  <button
+                    key={tag}
+                    type="button"
+                    onClick={() =>
+                      setTags(active ? tags.filter((t) => t !== tag) : [...tags, tag])
+                    }
+                    className={`flex-1 py-3 rounded-xl border-2 text-sm font-semibold transition-all ${
+                      active
+                        ? 'border-emerald-400 bg-emerald-50 text-emerald-700'
+                        : 'border-stone-200 bg-white text-stone-400 hover:border-stone-300'
+                    }`}
+                  >
+                    {TAG_CONFIG[tag].short}
+                  </button>
+                )
+              })}
+            </div>
+            <p className="text-xs text-stone-400 mt-1.5">GF: グルテンフリー　CF: カゼインフリー　SF: 白砂糖フリー</p>
           </div>
 
           {/* 体験メモ */}

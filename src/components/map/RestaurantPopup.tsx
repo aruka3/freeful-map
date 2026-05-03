@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import type { Restaurant } from '@/types'
-import { STATUS_CONFIG } from '@/utils/constants'
+import { STATUS_CONFIG, TAG_CONFIG } from '@/utils/constants'
 
 interface RestaurantPopupProps {
   restaurant: Restaurant
@@ -26,6 +26,16 @@ export default function RestaurantPopup({ restaurant, onClose }: RestaurantPopup
         </div>
 
         <p className="text-sm text-stone-500 mb-3">{restaurant.address}</p>
+
+        {restaurant.tags?.length > 0 && (
+          <div className="flex gap-1.5 mb-3">
+            {restaurant.tags.map((tag) => (
+              <span key={tag} className="text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">
+                {TAG_CONFIG[tag]?.short ?? tag}
+              </span>
+            ))}
+          </div>
+        )}
 
         {restaurant.comment && (
           <p className="text-sm text-stone-600 bg-stone-50 rounded-xl p-3 mb-4 line-clamp-4 leading-relaxed">

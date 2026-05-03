@@ -18,5 +18,13 @@ export const STATUS_CONFIG: Record<
   },
 }
 
+export const TAG_CONFIG: Record<string, { label: string; short: string }> = {
+  gluten_free:  { label: 'グルテンフリー', short: 'GF' },
+  casein_free:  { label: 'カゼインフリー', short: 'CF' },
+  sugar_free:   { label: '白砂糖フリー',   short: 'SF' },
+}
+
+export const ALL_TAGS = ['gluten_free', 'casein_free', 'sugar_free']
+
 export const DEFAULT_CENTER: [number, number] = [35.6762, 139.6503]
 export const DEFAULT_ZOOM = 13
