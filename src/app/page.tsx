@@ -129,10 +129,10 @@ export default function HomePage() {
               {filtered.map((r) => {
                 const c = STATUS_CONFIG[r.status]
                 return (
-                  <button
+                  <Link
                     key={r.id}
-                    onClick={() => { setSelected(r); setShowList(false) }}
-                    className="w-full text-left p-4 hover:bg-stone-50 transition-colors"
+                    href={`/restaurants/${r.id}`}
+                    className="block w-full text-left p-4 hover:bg-stone-50 transition-colors"
                   >
                     <div className="flex items-start gap-3">
                       <div className="w-3 h-3 rounded-full mt-1.5 shrink-0" style={{ backgroundColor: c.color }} />
@@ -143,8 +143,11 @@ export default function HomePage() {
                           <p className="text-xs text-stone-500 mt-1 line-clamp-1">{r.comment}</p>
                         )}
                       </div>
+                      <svg className="w-4 h-4 text-stone-300 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                      </svg>
                     </div>
-                  </button>
+                  </Link>
                 )
               })}
             </div>
