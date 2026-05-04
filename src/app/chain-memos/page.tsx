@@ -5,29 +5,32 @@ import Link from 'next/link'
 import { fetchChainMemos } from '@/lib/supabase'
 import type { ChainMemo } from '@/types'
 
-function AccommodationsRows({ text }: { text: string }) {
+function parseLines(text: string) {
   const lines = text.split('\n').filter(Boolean)
-  const isMultiChain = lines.length > 1 && lines.every(l => l.includes('：'))
-
-  if (!isMultiChain) {
-    return <p className="text-sm text-emerald-900 leading-relaxed">{text}</p>
+  if (lines.length > 1 && lines.every(l => l.includes('：'))) {
+    return lines.map(l => {
+      const idx = l.indexOf('：')
+      return { name: l.slice(0, idx), desc: l.slice(idx + 1).trim() }
+    })
   }
+  return null
+}
 
-  return (
-    <div className="divide-y divide-emerald-100">
-      {lines.map((line, i) => {
-        const colonIdx = line.indexOf('：')
-        const chainName = line.slice(0, colonIdx)
-        const desc = line.slice(colonIdx + 1)
-        return (
-          <div key={i} className="py-2 first:pt-0 last:pb-0">
-            <p className="text-xs font-bold text-emerald-700 mb-0.5">{chainName}</p>
-            <p className="text-sm text-emerald-900 leading-relaxed">{desc}</p>
+function AccommodationsSummary({ text }: { text: string }) {
+  const rows = parseLines(text)
+  if (rows) {
+    return (
+      <div className="space-y-1.5">
+        {rows.map((row, i) => (
+          <div key={i} className="flex items-baseline gap-2">
+            <span className="text-xs font-bold text-emerald-700 shrink-0 whitespace-nowrap">{row.name}</span>
+            <span className="text-xs text-emerald-900 leading-relaxed line-clamp-1">{row.desc}</span>
           </div>
-        )
-      })}
-    </div>
-  )
+        ))}
+      </div>
+    )
+  }
+  return <p className="text-sm text-emerald-900 leading-relaxed line-clamp-3">{text}</p>
 }
 
 export default function ChainMemosPage() {
@@ -70,12 +73,9 @@ export default function ChainMemosPage() {
       <div className="max-w-lg mx-auto px-4 pt-5 pb-8">
         <div className="bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3 flex gap-3 mb-5">
           <span className="text-lg shrink-0">💡</span>
-          <div>
-            <p className="text-xs font-semibold text-amber-700 mb-0.5">使い方のヒント</p>
-            <p className="text-xs text-amber-600 leading-relaxed">
-              対応は店舗・時期・地域によって異なります。必ず事前に確認してから利用してください。あくまで「参考ヒント」です。
-            </p>
-          </div>
+          <p className="text-xs text-amber-700 leading-relaxed">
+            対応は店舗・時期・地域によって異なります。必ず事前に確認してから利用してください。
+          </p>
         </div>
 
         {loading ? (
@@ -95,39 +95,22 @@ export default function ChainMemosPage() {
             {memos.map((memo) => (
               <div key={memo.id} className="bg-white rounded-2xl border border-stone-100 shadow-sm overflow-hidden">
                 <Link href={`/chain-memos/${memo.id}`} className="block px-4 pt-4 pb-3 hover:bg-stone-50 transition-colors">
-                  <div className="flex items-start justify-between gap-3 mb-3">
-                    <h2 className="font-bold text-stone-800">{memo.name}</h2>
+                  <div className="flex items-center justify-between gap-3 mb-3">
+                    <h2 className="font-bold text-stone-800 text-sm">{memo.name}</h2>
                     {memo.confirmed_at && (
-                      <span className="text-xs text-stone-400 shrink-0 mt-0.5 whitespace-nowrap">
+                      <span className="text-xs text-stone-400 shrink-0 whitespace-nowrap">
                         {new Date(memo.confirmed_at).toLocaleDateString('ja-JP', { year: 'numeric', month: 'short' })}確認
                       </span>
                     )}
                   </div>
-                  <div className="bg-emerald-50 rounded-xl px-3 py-2.5 mb-2">
-                    <p className="text-xs font-semibold text-emerald-600 mb-2">✅ 使える対応</p>
-                    <AccommodationsRows text={memo.accommodations} />
+                  <div className="bg-emerald-50 rounded-xl px-3 py-2.5">
+                    <AccommodationsSummary text={memo.accommodations} />
                   </div>
-                  {memo.caveats && (
-                    <div className="flex gap-1.5 items-start">
-                      <span className="text-amber-400 text-xs mt-0.5 shrink-0">⚠️</span>
-                      <p className="text-xs text-amber-700 leading-relaxed line-clamp-2">{memo.caveats}</p>
-                    </div>
-                  )}
                 </Link>
                 <div className="border-t border-stone-100 flex">
-                  <Link
-                    href={`/chain-memos/${memo.id}`}
-                    className="flex-1 py-2.5 text-center text-xs text-stone-500 hover:text-emerald-600 hover:bg-stone-50 transition-colors font-medium"
-                  >
-                    詳細
-                  </Link>
+                  <Link href={`/chain-memos/${memo.id}`} className="flex-1 py-2.5 text-center text-xs text-stone-500 hover:text-emerald-600 hover:bg-stone-50 transition-colors font-medium">詳細</Link>
                   <div className="w-px bg-stone-100" />
-                  <Link
-                    href={`/chain-memos/${memo.id}/edit`}
-                    className="flex-1 py-2.5 text-center text-xs text-stone-500 hover:text-emerald-600 hover:bg-stone-50 transition-colors font-medium"
-                  >
-                    編集
-                  </Link>
+                  <Link href={`/chain-memos/${memo.id}/edit`} className="flex-1 py-2.5 text-center text-xs text-stone-500 hover:text-emerald-600 hover:bg-stone-50 transition-colors font-medium">編集</Link>
                   <div className="w-px bg-stone-100" />
                   <DeleteButton memoId={memo.id} sessionId={memo.session_id} onDeleted={() => setMemos(prev => prev.filter(m => m.id !== memo.id))} />
                 </div>
@@ -142,7 +125,6 @@ export default function ChainMemosPage() {
 
 function DeleteButton({ memoId, sessionId, onDeleted }: { memoId: string; sessionId: string; onDeleted: () => void }) {
   const [deleting, setDeleting] = useState(false)
-
   const handleDelete = async (e: React.MouseEvent) => {
     e.preventDefault()
     if (!confirm('このメモを削除しますか？')) return
@@ -156,13 +138,8 @@ function DeleteButton({ memoId, sessionId, onDeleted }: { memoId: string; sessio
       setDeleting(false)
     }
   }
-
   return (
-    <button
-      onClick={handleDelete}
-      disabled={deleting}
-      className="flex-1 py-2.5 text-center text-xs text-stone-500 hover:text-rose-500 hover:bg-rose-50 transition-colors font-medium disabled:opacity-40"
-    >
+    <button onClick={handleDelete} disabled={deleting} className="flex-1 py-2.5 text-center text-xs text-stone-500 hover:text-rose-500 hover:bg-rose-50 transition-colors font-medium disabled:opacity-40">
       {deleting ? '…' : '削除'}
     </button>
   )

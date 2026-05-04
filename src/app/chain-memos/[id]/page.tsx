@@ -6,29 +6,32 @@ import Link from 'next/link'
 import { fetchChainMemo, deleteChainMemo } from '@/lib/supabase'
 import type { ChainMemo } from '@/types'
 
-function AccommodationsRows({ text }: { text: string }) {
+function parseLines(text: string) {
   const lines = text.split('\n').filter(Boolean)
-  const isMultiChain = lines.length > 1 && lines.every(l => l.includes('：'))
-
-  if (!isMultiChain) {
-    return <p className="text-base leading-relaxed whitespace-pre-wrap">{text}</p>
+  if (lines.length > 1 && lines.every(l => l.includes('：'))) {
+    return lines.map(l => {
+      const idx = l.indexOf('：')
+      return { name: l.slice(0, idx), desc: l.slice(idx + 1).trim() }
+    })
   }
+  return null
+}
 
-  return (
-    <div className="divide-y divide-emerald-500">
-      {lines.map((line, i) => {
-        const colonIdx = line.indexOf('：')
-        const chainName = line.slice(0, colonIdx)
-        const desc = line.slice(colonIdx + 1)
-        return (
-          <div key={i} className="py-3 first:pt-0 last:pb-0">
-            <p className="text-sm font-bold text-emerald-100 mb-1">{chainName}</p>
-            <p className="text-base leading-relaxed">{desc}</p>
+function AccommodationsDetail({ text }: { text: string }) {
+  const rows = parseLines(text)
+  if (rows) {
+    return (
+      <div className="space-y-0">
+        {rows.map((row, i) => (
+          <div key={i} className={`px-5 py-4 ${i > 0 ? 'border-t border-emerald-500' : ''}`}>
+            <p className="text-xs font-bold text-emerald-200 mb-1">{row.name}</p>
+            <p className="text-base leading-relaxed">{row.desc}</p>
           </div>
-        )
-      })}
-    </div>
-  )
+        ))}
+      </div>
+    )
+  }
+  return <p className="px-5 pb-5 text-base leading-relaxed">{text}</p>
 }
 
 export default function ChainMemoDetailPage() {
@@ -75,17 +78,8 @@ export default function ChainMemoDetailPage() {
             <h1 className="font-bold text-stone-800 truncate">{memo.name}</h1>
           </div>
           <div className="flex items-center gap-1 shrink-0">
-            <Link
-              href={`/chain-memos/${id}/edit`}
-              className="text-xs text-stone-500 hover:text-stone-700 px-3 py-1.5 rounded-lg hover:bg-stone-100 transition-colors font-medium"
-            >
-              編集
-            </Link>
-            <button
-              onClick={handleDelete}
-              disabled={deleting}
-              className="text-xs text-rose-400 hover:text-rose-600 px-3 py-1.5 rounded-lg hover:bg-rose-50 transition-colors font-medium"
-            >
+            <Link href={`/chain-memos/${id}/edit`} className="text-xs text-stone-500 hover:text-stone-700 px-3 py-1.5 rounded-lg hover:bg-stone-100 transition-colors font-medium">編集</Link>
+            <button onClick={handleDelete} disabled={deleting} className="text-xs text-rose-400 hover:text-rose-600 px-3 py-1.5 rounded-lg hover:bg-rose-50 transition-colors font-medium">
               {deleting ? '削除中…' : '削除'}
             </button>
           </div>
@@ -94,12 +88,12 @@ export default function ChainMemoDetailPage() {
 
       <div className="max-w-lg mx-auto px-4 py-5 space-y-4">
         {/* 使える対応 */}
-        <div className="bg-emerald-600 rounded-2xl p-5 text-white shadow-sm">
-          <p className="text-emerald-200 text-xs font-semibold mb-3">✅ 使える対応</p>
-          <AccommodationsRows text={memo.accommodations} />
+        <div className="bg-emerald-600 rounded-2xl text-white shadow-sm overflow-hidden">
+          <p className="text-emerald-200 text-xs font-semibold px-5 pt-4 pb-3">✅ 使える対応</p>
+          <AccommodationsDetail text={memo.accommodations} />
+          <div className="pb-2" />
         </div>
 
-        {/* 注意点 */}
         {memo.caveats && (
           <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4">
             <p className="text-xs font-semibold text-amber-600 mb-2">⚠️ 注意点</p>
@@ -107,7 +101,6 @@ export default function ChainMemoDetailPage() {
           </div>
         )}
 
-        {/* メモ */}
         {memo.memo && (
           <div className="bg-white rounded-2xl border border-stone-100 p-4 shadow-sm">
             <p className="text-xs font-semibold text-stone-400 mb-2">💬 メモ</p>
@@ -115,7 +108,6 @@ export default function ChainMemoDetailPage() {
           </div>
         )}
 
-        {/* メタ情報 */}
         <div className="bg-white rounded-2xl border border-stone-100 p-4 shadow-sm space-y-3">
           {memo.confirmed_at && (
             <div className="flex items-center justify-between">
@@ -128,12 +120,7 @@ export default function ChainMemoDetailPage() {
           {memo.official_url && (
             <div className="flex items-start justify-between gap-3">
               <span className="text-xs text-stone-400 shrink-0 mt-0.5">公式情報</span>
-              <a
-                href={memo.official_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-sm text-emerald-600 hover:underline break-all"
-              >
+              <a href={memo.official_url} target="_blank" rel="noopener noreferrer" className="text-sm text-emerald-600 hover:underline break-all">
                 {memo.official_url}
               </a>
             </div>
