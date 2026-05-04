@@ -84,7 +84,8 @@ export default function EditRestaurantPage() {
       router.push(`/restaurants/${id}`)
     } catch (err) {
       console.error(err)
-      setError('更新に失敗しました。Supabaseで「ALTER TABLE restaurants ADD COLUMN IF NOT EXISTS tags text[] default \'{}\'」を実行してから再試行してください。')
+      const msg = err instanceof Error ? err.message : String(err)
+      setError(`更新に失敗しました: ${msg}`)
     }
     setSubmitting(false)
   }
