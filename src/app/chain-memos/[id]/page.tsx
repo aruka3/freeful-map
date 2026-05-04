@@ -6,6 +6,31 @@ import Link from 'next/link'
 import { fetchChainMemo, deleteChainMemo } from '@/lib/supabase'
 import type { ChainMemo } from '@/types'
 
+function AccommodationsRows({ text }: { text: string }) {
+  const lines = text.split('\n').filter(Boolean)
+  const isMultiChain = lines.length > 1 && lines.every(l => l.includes('：'))
+
+  if (!isMultiChain) {
+    return <p className="text-base leading-relaxed whitespace-pre-wrap">{text}</p>
+  }
+
+  return (
+    <div className="divide-y divide-emerald-500">
+      {lines.map((line, i) => {
+        const colonIdx = line.indexOf('：')
+        const chainName = line.slice(0, colonIdx)
+        const desc = line.slice(colonIdx + 1)
+        return (
+          <div key={i} className="py-3 first:pt-0 last:pb-0">
+            <p className="text-sm font-bold text-emerald-100 mb-1">{chainName}</p>
+            <p className="text-base leading-relaxed">{desc}</p>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
 export default function ChainMemoDetailPage() {
   const { id } = useParams<{ id: string }>()
   const router = useRouter()
@@ -68,20 +93,16 @@ export default function ChainMemoDetailPage() {
       </header>
 
       <div className="max-w-lg mx-auto px-4 py-5 space-y-4">
-        {/* 使える対応 - メインカード */}
+        {/* 使える対応 */}
         <div className="bg-emerald-600 rounded-2xl p-5 text-white shadow-sm">
-          <p className="text-emerald-200 text-xs font-semibold mb-2 flex items-center gap-1">
-            ✅ 使える対応
-          </p>
-          <p className="text-base leading-relaxed whitespace-pre-wrap">{memo.accommodations}</p>
+          <p className="text-emerald-200 text-xs font-semibold mb-3">✅ 使える対応</p>
+          <AccommodationsRows text={memo.accommodations} />
         </div>
 
         {/* 注意点 */}
         {memo.caveats && (
           <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4">
-            <p className="text-xs font-semibold text-amber-600 mb-2 flex items-center gap-1">
-              ⚠️ 注意点
-            </p>
+            <p className="text-xs font-semibold text-amber-600 mb-2">⚠️ 注意点</p>
             <p className="text-sm text-amber-800 leading-relaxed whitespace-pre-wrap">{memo.caveats}</p>
           </div>
         )}
@@ -125,7 +146,6 @@ export default function ChainMemoDetailPage() {
           </div>
         </div>
 
-        {/* 参考ヒント注意書き */}
         <p className="text-center text-xs text-stone-400 leading-relaxed pb-2">
           この情報は確認時点のものです。店舗・時期によって変わる場合があります。<br />
           必ず事前に確認してからご利用ください。
