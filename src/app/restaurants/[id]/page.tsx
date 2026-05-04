@@ -24,7 +24,7 @@ export default function RestaurantDetailPage() {
   const handleDelete = async () => {
     if (!confirm('このお店の記録を削除しますか？')) return
     setDeleting(true)
-    await deleteRestaurant(id)
+    await deleteRestaurant(id, restaurant.session_id)
     router.push('/')
   }
 
