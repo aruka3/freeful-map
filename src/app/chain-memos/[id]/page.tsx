@@ -49,7 +49,7 @@ export default function ChainMemoDetailPage() {
             </Link>
             <h1 className="font-bold text-stone-800 truncate">{memo.name}</h1>
           </div>
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-1 shrink-0">
             <Link
               href={`/chain-memos/${id}/edit`}
               className="text-xs text-stone-500 hover:text-stone-700 px-3 py-1.5 rounded-lg hover:bg-stone-100 transition-colors font-medium"
@@ -59,7 +59,7 @@ export default function ChainMemoDetailPage() {
             <button
               onClick={handleDelete}
               disabled={deleting}
-              className="text-xs text-rose-500 hover:text-rose-700 px-3 py-1.5 rounded-lg hover:bg-rose-50 transition-colors font-medium"
+              className="text-xs text-rose-400 hover:text-rose-600 px-3 py-1.5 rounded-lg hover:bg-rose-50 transition-colors font-medium"
             >
               {deleting ? '削除中…' : '削除'}
             </button>
@@ -67,40 +67,35 @@ export default function ChainMemoDetailPage() {
         </div>
       </header>
 
-      <div className="max-w-lg mx-auto px-4 py-6 space-y-4">
-        {/* 注意バナー */}
-        <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 flex gap-2">
-          <span className="text-amber-500 text-sm shrink-0 mt-0.5">⚠️</span>
-          <p className="text-xs text-amber-700 leading-relaxed">
-            この情報は確認時点のものです。店舗・時期によって変わる場合があります。
-            必ず事前に確認してからご利用ください。
+      <div className="max-w-lg mx-auto px-4 py-5 space-y-4">
+        {/* 使える対応 - メインカード */}
+        <div className="bg-emerald-600 rounded-2xl p-5 text-white shadow-sm">
+          <p className="text-emerald-200 text-xs font-semibold mb-2 flex items-center gap-1">
+            ✅ 使える対応
           </p>
-        </div>
-
-        {/* 使える対応 */}
-        <div className="bg-white rounded-2xl border border-stone-100 p-5 shadow-sm">
-          <p className="text-xs font-semibold text-stone-400 mb-2 uppercase tracking-wide">使える対応</p>
-          <p className="text-sm text-stone-800 leading-relaxed whitespace-pre-wrap">{memo.accommodations}</p>
+          <p className="text-base leading-relaxed whitespace-pre-wrap">{memo.accommodations}</p>
         </div>
 
         {/* 注意点 */}
         {memo.caveats && (
-          <div className="bg-amber-50 rounded-2xl border border-amber-100 p-5">
-            <p className="text-xs font-semibold text-amber-500 mb-2 uppercase tracking-wide">注意点</p>
+          <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4">
+            <p className="text-xs font-semibold text-amber-600 mb-2 flex items-center gap-1">
+              ⚠️ 注意点
+            </p>
             <p className="text-sm text-amber-800 leading-relaxed whitespace-pre-wrap">{memo.caveats}</p>
           </div>
         )}
 
         {/* メモ */}
         {memo.memo && (
-          <div className="bg-white rounded-2xl border border-stone-100 p-5 shadow-sm">
-            <p className="text-xs font-semibold text-stone-400 mb-2 uppercase tracking-wide">メモ</p>
+          <div className="bg-white rounded-2xl border border-stone-100 p-4 shadow-sm">
+            <p className="text-xs font-semibold text-stone-400 mb-2">💬 メモ</p>
             <p className="text-sm text-stone-700 leading-relaxed whitespace-pre-wrap">{memo.memo}</p>
           </div>
         )}
 
         {/* メタ情報 */}
-        <div className="bg-white rounded-2xl border border-stone-100 p-5 shadow-sm space-y-3">
+        <div className="bg-white rounded-2xl border border-stone-100 p-4 shadow-sm space-y-3">
           {memo.confirmed_at && (
             <div className="flex items-center justify-between">
               <span className="text-xs text-stone-400">確認日</span>
@@ -116,19 +111,25 @@ export default function ChainMemoDetailPage() {
                 href={memo.official_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-sm text-emerald-600 hover:underline truncate"
+                className="text-sm text-emerald-600 hover:underline break-all"
               >
                 {memo.official_url}
               </a>
             </div>
           )}
-          <div className="flex items-center justify-between">
-            <span className="text-xs text-stone-400">登録日</span>
-            <span className="text-xs text-stone-500">
+          <div className="flex items-center justify-between border-t border-stone-50 pt-3">
+            <span className="text-xs text-stone-300">登録日</span>
+            <span className="text-xs text-stone-300">
               {new Date(memo.created_at).toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric' })}
             </span>
           </div>
         </div>
+
+        {/* 参考ヒント注意書き */}
+        <p className="text-center text-xs text-stone-400 leading-relaxed pb-2">
+          この情報は確認時点のものです。店舗・時期によって変わる場合があります。<br />
+          必ず事前に確認してからご利用ください。
+        </p>
       </div>
     </div>
   )
