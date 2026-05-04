@@ -98,6 +98,10 @@ export default function HomePage() {
             <MapView restaurants={filtered} onPinClick={handlePinClick} />
           )}
 
+          {selected && (
+            <RestaurantPopup restaurant={selected} onClose={() => setSelected(null)} />
+          )}
+
           {!loading && !error && (
             <div className="absolute top-4 left-4 right-4 z-20 flex items-center gap-2 pointer-events-none">
               <div className="pointer-events-auto">
@@ -155,9 +159,6 @@ export default function HomePage() {
         </div>
       </div>
 
-      {selected && (
-        <RestaurantPopup restaurant={selected} onClose={() => setSelected(null)} />
-      )}
     </div>
   )
 }
