@@ -42,7 +42,10 @@ export async function updateRestaurant(
   id: string,
   updates: Partial<RestaurantInsert>
 ): Promise<Restaurant> {
-  const { data, error } = await supabase
+  const client = createClient(supabaseUrl, supabaseAnonKey, {
+    global: { headers: { 'x-session-id': updates.session_id ?? '' } },
+  })
+  const { data, error } = await client
     .from('restaurants')
     .update(updates)
     .eq('id', id)
@@ -53,7 +56,10 @@ export async function updateRestaurant(
   return data as Restaurant
 }
 
-export async function deleteRestaurant(id: string): Promise<void> {
-  const { error } = await supabase.from('restaurants').delete().eq('id', id)
+export async function deleteRestaurant(id: string, sessionId: string): Promise<void> {
+  const client = createClient(supabaseUrl, supabaseAnonKey, {
+    global: { headers: { 'x-session-id': sessionId } },
+  })
+  const { error } = await client.from('restaurants').delete().eq('id', id)
   if (error) throw error
 }
