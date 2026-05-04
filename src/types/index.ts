@@ -19,3 +19,18 @@ export type RestaurantInsert = Omit<Restaurant, 'id' | 'created_at' | 'updated_a
 export interface FilterState {
   status: RestaurantStatus[]
 }
+
+export interface ChainMemo {
+  id: string
+  created_at: string
+  updated_at: string
+  name: string
+  accommodations: string
+  caveats: string | null
+  confirmed_at: string | null
+  official_url: string | null
+  memo: string | null
+  session_id: string
+}
+
+export type ChainMemoInsert = Omit<ChainMemo, 'id' | 'created_at' | 'updated_at'>
