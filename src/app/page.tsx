@@ -56,6 +56,18 @@ export default function HomePage() {
               {showList ? '地図' : 'リスト'}
             </button>
             <Link
+              href="/chain-memos"
+              className="sm:hidden text-xs text-stone-500 hover:text-stone-700 px-3 py-1.5 rounded-lg hover:bg-stone-100 transition-colors"
+            >
+              📝
+            </Link>
+            <Link
+              href="/chain-memos"
+              className="text-xs text-stone-500 hover:text-stone-700 px-3 py-1.5 rounded-lg hover:bg-stone-100 transition-colors font-medium hidden sm:block"
+            >
+              📝 困ったときメモ
+            </Link>
+            <Link
               href="/restaurants/new"
               className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2 rounded-full transition-colors shadow-sm"
             >
