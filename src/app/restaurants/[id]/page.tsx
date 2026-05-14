@@ -87,6 +87,18 @@ export default function RestaurantDetailPage() {
             {restaurant.address}
           </p>
 
+          <a
+            href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(restaurant.name)}&query_place_id=&center=${restaurant.lat},${restaurant.lng}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-3 flex items-center gap-2 text-xs font-medium text-emerald-600 hover:text-emerald-700 transition-colors"
+          >
+            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+            </svg>
+            Googleマップで開く・経路を調べる
+          </a>
+
           {restaurant.tags?.length > 0 && (
             <div className="flex gap-1.5 mt-3 flex-wrap">
               {restaurant.tags.map((tag) => (
