@@ -138,7 +138,11 @@ async function geocodeByName(name: string): Promise<{ lat: number; lng: number }
 }
 
 async function reverseGeocode(lat: number, lng: number): Promise<string | null> {
-  // HeartRails Geo API（日本住所に最適化、丁目レベルまで取得可能）
+  let prefecture = ''
+  let city = ''
+  let town = ''
+
+  // HeartRails で都道府県・市区を取得
   try {
     const res = await fetch(
       `https://geoapi.heartrails.com/api/json?method=searchByGeoPoint&x=${lng}&y=${lat}`,
@@ -148,10 +152,28 @@ async function reverseGeocode(lat: number, lng: number): Promise<string | null> 
       const data = await res.json()
       const loc = data?.response?.location?.[0]
       if (loc?.prefecture) {
-        return `${loc.prefecture}${loc.city}${loc.town ?? ''}`
+        prefecture = loc.prefecture || ''
+        city = loc.city || ''
+        town = loc.town || ''
       }
     }
   } catch { /* fall through */ }
+
+  // GSI 逆ジオコーダーで丁目レベルを補完（HeartRails で town が空の場合）
+  if (prefecture && !town) {
+    try {
+      const res = await fetch(
+        `https://mreversegeocoder.gsi.go.jp/reverse-geocoder/LonLatToAddress?lat=${lat}&lon=${lng}`,
+        { headers: { 'User-Agent': 'FreefulMap/1.0' } }
+      )
+      if (res.ok) {
+        const data = await res.json()
+        town = data?.results?.lv01Nm || ''
+      }
+    } catch { /* fall through */ }
+  }
+
+  if (prefecture) return `${prefecture}${city}${town}`
 
   // Nominatim フォールバック
   try {
