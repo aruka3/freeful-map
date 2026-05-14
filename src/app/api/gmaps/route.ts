@@ -138,6 +138,22 @@ async function geocodeByName(name: string): Promise<{ lat: number; lng: number }
 }
 
 async function reverseGeocode(lat: number, lng: number): Promise<string | null> {
+  // HeartRails Geo API（日本住所に最適化、丁目レベルまで取得可能）
+  try {
+    const res = await fetch(
+      `https://geoapi.heartrails.com/api/json?method=searchByGeoPoint&x=${lng}&y=${lat}`,
+      { headers: { 'User-Agent': 'FreefulMap/1.0' } }
+    )
+    if (res.ok) {
+      const data = await res.json()
+      const loc = data?.response?.location?.[0]
+      if (loc?.prefecture) {
+        return `${loc.prefecture}${loc.city}${loc.town ?? ''}`
+      }
+    }
+  } catch { /* fall through */ }
+
+  // Nominatim フォールバック
   try {
     const res = await fetch(
       `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=ja`,
@@ -150,8 +166,7 @@ async function reverseGeocode(lat: number, lng: number): Promise<string | null> 
     const parts = [
       a.state,
       a.city ?? a.county ?? a.town,
-      a.suburb ?? a.quarter ?? a.neighbourhood,
-      a.road,
+      a.city_district ?? a.suburb ?? a.quarter ?? a.neighbourhood,
       a.house_number,
     ].filter(Boolean)
     return parts.length > 0 ? parts.join('') : (data.display_name as string | null)
