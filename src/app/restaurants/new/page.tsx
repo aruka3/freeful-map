@@ -28,7 +28,7 @@ export default function NewRestaurantPage() {
   const [error, setError] = useState('')
   const [gmapsUrl, setGmapsUrl] = useState('')
   const [gmapsLoading, setGmapsLoading] = useState(false)
-  const [gmapsMsg, setGmapsMsg] = useState<{ type: 'ok' | 'error'; text: string } | null>(null)
+  const [gmapsMsg, setGmapsMsg] = useState<{ type: 'ok' | 'error'; text: string; hint?: boolean } | null>(null)
 
   const fetchFromGmaps = async () => {
     if (!gmapsUrl.trim()) return
