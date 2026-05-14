@@ -128,7 +128,7 @@ export default function NewRestaurantPage() {
               <Input
                 value={gmapsUrl}
                 onChange={(e) => { setGmapsUrl(e.target.value); setGmapsMsg(null) }}
-                placeholder="https://maps.app.goo.gl/..."
+                placeholder="https://maps.app.goo.gl/... またはフルURL"
                 className="flex-1 text-xs"
               />
               <button
@@ -154,7 +154,20 @@ export default function NewRestaurantPage() {
               </p>
             )}
             {gmapsMsg?.type === 'error' && (
-              <p className="text-xs text-amber-600">{gmapsMsg.text}</p>
+              <div className="bg-amber-50 rounded-xl p-3 space-y-1.5">
+                <p className="text-xs text-amber-700">{gmapsMsg.text}</p>
+                {gmapsMsg.hint && (
+                  <div className="text-xs text-amber-600 space-y-0.5">
+                    <p className="font-semibold">フルURLの取得方法：</p>
+                    <p>① SafariでGoogleマップを開く（マップアプリは不可）</p>
+                    <p>② お店を検索・タップ</p>
+                    <p>③ URLバーのURLをそのままコピー</p>
+                  </div>
+                )}
+              </div>
+            )}
+            {!gmapsMsg && (
+              <p className="text-[11px] text-stone-400">GoogleマップアプリやSafariの共有URLをそのまま貼り付けてください</p>
             )}
           </div>
 

@@ -1,54 +1,70 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-// Google Maps URLから店名・座標を抽出し、住所を逆ジオコーディングで取得
 export async function GET(request: NextRequest) {
   const inputUrl = request.nextUrl.searchParams.get('url')
   if (!inputUrl?.trim()) {
     return NextResponse.json({ error: 'URLを入力してください' }, { status: 400 })
   }
 
-  try {
-    // 短縮URLをリダイレクト追跡して最終URLを取得
-    const finalUrl = await resolveUrl(inputUrl.trim())
+  let url = inputUrl.trim()
 
-    // 緯度経度を抽出
-    const coords = extractCoords(finalUrl)
-    if (!coords) {
-      return NextResponse.json({ error: '座標を取得できませんでした。URLを確認してください。' }, { status: 422 })
+  // 短縮URLは追跡して解決を試みる
+  if (url.includes('goo.gl') || url.includes('maps.app')) {
+    const resolved = await resolveShortUrl(url)
+    if (!resolved) {
+      return NextResponse.json({
+        error: '短縮URLの解決に失敗しました。Safariのアドレスバーに表示されるURLをそのままコピーして貼り付けてください。',
+        hint: true,
+      }, { status: 422 })
     }
+    url = resolved
+  }
 
-    // 店名を抽出（URLパスの /place/NAME/ 部分）
-    const name = extractName(finalUrl)
+  // google.com/maps 以外は不可
+  if (!url.includes('google.com/maps')) {
+    return NextResponse.json({ error: 'GoogleマップのURLを入力してください。' }, { status: 422 })
+  }
 
-    // 逆ジオコーディングで住所取得（Nominatim）
-    const address = await reverseGeocode(coords.lat, coords.lng)
+  // 緯度経度を抽出（@LAT,LNG,ZOOMz パターン）
+  const coords = extractCoords(url)
+  if (!coords) {
+    return NextResponse.json({ error: 'URLに座標情報が含まれていません。地図上でお店を選択した後のURLをコピーしてください。' }, { status: 422 })
+  }
 
-    return NextResponse.json({
-      name: name ?? '',
-      address: address ?? '',
-      lat: coords.lat,
-      lng: coords.lng,
+  // 店名を抽出
+  const name = extractName(url)
+
+  // 逆ジオコーディングで住所取得
+  const address = await reverseGeocode(coords.lat, coords.lng)
+
+  return NextResponse.json({
+    name: name ?? '',
+    address: address ?? '',
+    lat: coords.lat,
+    lng: coords.lng,
+  })
+}
+
+async function resolveShortUrl(url: string): Promise<string | null> {
+  try {
+    const res = await fetch(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'Accept-Language': 'ja,en-US;q=0.9,en;q=0.8',
+      },
+      redirect: 'follow',
     })
-  } catch (e) {
-    console.error('gmaps fetch error:', e)
-    return NextResponse.json({ error: 'URLの読み込みに失敗しました。' }, { status: 500 })
+    if (res.url && res.url.includes('google.com/maps')) {
+      return res.url
+    }
+    return null
+  } catch {
+    return null
   }
 }
 
-async function resolveUrl(url: string): Promise<string> {
-  // google.com/maps の場合はそのまま
-  if (url.includes('google.com/maps')) return url
-
-  // 短縮URL（maps.app.goo.gl, goo.gl/maps）をリダイレクト追跡
-  const res = await fetch(url, {
-    redirect: 'follow',
-    headers: { 'User-Agent': 'Mozilla/5.0' },
-  })
-  return res.url
-}
-
 function extractCoords(url: string): { lat: number; lng: number } | null {
-  // @LAT,LNG,ZOOM または @LAT,LNG パターン
   const m = url.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/)
   if (!m) return null
   return { lat: parseFloat(m[1]), lng: parseFloat(m[2]) }
@@ -57,12 +73,10 @@ function extractCoords(url: string): { lat: number; lng: number } | null {
 function extractName(url: string): string | null {
   try {
     const u = new URL(url)
-    // /maps/place/NAME/@... のパターン
     const match = u.pathname.match(/\/place\/([^/@]+)/)
     if (!match) return null
-    const decoded = decodeURIComponent(match[1]).replace(/\+/g, ' ')
-    // Google が付けるゴミ文字除去
-    return decoded.replace(/^[^a-zA-Z　-鿿＀-￯]+/, '').trim() || null
+    const decoded = decodeURIComponent(match[1]).replace(/\+/g, ' ').trim()
+    return decoded || null
   } catch {
     return null
   }
@@ -78,8 +92,6 @@ async function reverseGeocode(lat: number, lng: number): Promise<string | null> 
     const data = await res.json()
     const a = data.address as Record<string, string>
     if (!a) return null
-
-    // 日本語住所を組み立て（都道府県→市区町村→町名→番地）
     const parts = [
       a.state,
       a.city ?? a.county ?? a.town,
@@ -87,7 +99,6 @@ async function reverseGeocode(lat: number, lng: number): Promise<string | null> 
       a.road,
       a.house_number,
     ].filter(Boolean)
-
     return parts.length > 0 ? parts.join('') : (data.display_name as string | null)
   } catch {
     return null
