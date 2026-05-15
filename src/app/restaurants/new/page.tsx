@@ -26,32 +26,6 @@ export default function NewRestaurantPage() {
   const [geoMsg, setGeoMsg] = useState<{ type: 'ok' | 'error'; text: string } | null>(null)
   const [showManual, setShowManual] = useState(false)
   const [error, setError] = useState('')
-  const [gmapsUrl, setGmapsUrl] = useState('')
-  const [gmapsLoading, setGmapsLoading] = useState(false)
-  const [gmapsMsg, setGmapsMsg] = useState<{ type: 'ok' | 'error'; text: string; hint?: boolean } | null>(null)
-
-  const fetchFromGmaps = async () => {
-    if (!gmapsUrl.trim()) return
-    setGmapsLoading(true)
-    setGmapsMsg(null)
-    try {
-      const res = await fetch(`/api/gmaps?url=${encodeURIComponent(gmapsUrl.trim())}`)
-      const data = await res.json()
-      if (!res.ok || data.error) {
-        setGmapsMsg({ type: 'error', text: data.error ?? '取得に失敗しました。手動で入力してください。' })
-        return
-      }
-      if (data.name) setName(data.name)
-      if (data.address) setAddress(data.address)
-      if (data.lat) setLat(data.lat)
-      if (data.lng) setLng(data.lng)
-      const filled = [data.name && '店名', data.address && '住所'].filter(Boolean).join('・')
-      setGmapsMsg({ type: 'ok', text: `${filled}を取得しました。内容を確認してください。` })
-    } catch {
-      setGmapsMsg({ type: 'error', text: '取得に失敗しました。手動で入力してください。' })
-    }
-    setGmapsLoading(false)
-  }
 
   const geocode = async () => {
     if (!address.trim()) return
@@ -120,56 +94,6 @@ export default function NewRestaurantPage() {
               {error}
             </div>
           )}
-
-          {/* GoogleマップURL */}
-          <div className="bg-stone-100 rounded-2xl p-4 space-y-2">
-            <p className="text-xs font-semibold text-stone-600">📍 GoogleマップURLから取得（任意）</p>
-            <div className="flex gap-2">
-              <Input
-                value={gmapsUrl}
-                onChange={(e) => { setGmapsUrl(e.target.value); setGmapsMsg(null) }}
-                placeholder="https://maps.app.goo.gl/... またはフルURL"
-                className="flex-1 text-xs"
-              />
-              <button
-                type="button"
-                onClick={fetchFromGmaps}
-                disabled={gmapsLoading || !gmapsUrl.trim()}
-                className="shrink-0 bg-white hover:bg-stone-50 disabled:opacity-40 text-stone-700 text-xs font-semibold px-4 py-2 rounded-xl border border-stone-200 transition-colors whitespace-nowrap"
-              >
-                {gmapsLoading ? (
-                  <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.4 0 0 5.4 0 12h4z" />
-                  </svg>
-                ) : '取得'}
-              </button>
-            </div>
-            {gmapsMsg?.type === 'ok' && (
-              <p className="text-xs text-emerald-600 flex items-center gap-1">
-                <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                </svg>
-                {gmapsMsg.text}
-              </p>
-            )}
-            {gmapsMsg?.type === 'error' && (
-              <div className="bg-amber-50 rounded-xl p-3 space-y-1.5">
-                <p className="text-xs text-amber-700">{gmapsMsg.text}</p>
-                {gmapsMsg.hint && (
-                  <div className="text-xs text-amber-600 space-y-0.5">
-                    <p className="font-semibold">フルURLの取得方法：</p>
-                    <p>① SafariでGoogleマップを開く（マップアプリは不可）</p>
-                    <p>② お店を検索・タップ</p>
-                    <p>③ URLバーのURLをそのままコピー</p>
-                  </div>
-                )}
-              </div>
-            )}
-            {!gmapsMsg && (
-              <p className="text-[11px] text-stone-400">GoogleマップアプリやSafariの共有URLをそのまま貼り付けてください</p>
-            )}
-          </div>
 
           {/* 店名 */}
           <div>
