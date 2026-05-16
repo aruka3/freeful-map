@@ -20,7 +20,8 @@ export default function NewRestaurantPage() {
   const [lng, setLng] = useState(DEFAULT_LNG)
   const [status, setStatus] = useState<RestaurantStatus>('want_to_visit')
   const [tags, setTags] = useState<string[]>([])
-  const [comment, setComment] = useState('')
+  const [memoPublic, setMemoPublic] = useState('')
+  const [memoPrivate, setMemoPrivate] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [geoLoading, setGeoLoading] = useState(false)
   const [geoMsg, setGeoMsg] = useState<{ type: 'ok' | 'error'; text: string } | null>(null)
@@ -61,7 +62,9 @@ export default function NewRestaurantPage() {
         address: address.trim(),
         lat,
         lng,
-        comment: comment.trim() || null,
+        comment: null,
+        memo_public: memoPublic.trim() || null,
+        memo_private: memoPrivate.trim() || null,
         status,
         tags,
         session_id: getSessionId(),
@@ -227,17 +230,31 @@ export default function NewRestaurantPage() {
             <p className="text-xs text-stone-400 mt-1.5">GF: グルテンフリー　CF: カゼインフリー　SF: 白砂糖フリー</p>
           </div>
 
-          {/* 体験メモ */}
+          {/* 共有メモ */}
           <div>
             <FieldLabel>
-              体験メモ
-              <span className="text-stone-400 font-normal text-xs ml-2">任意</span>
+              共有メモ
+              <span className="text-stone-400 font-normal text-xs ml-2">任意・他のユーザーにも表示</span>
             </FieldLabel>
             <Textarea
-              value={comment}
-              onChange={(e) => setComment(e.target.value)}
-              rows={5}
-              placeholder="食べられたもの、避けたもの、対応してくれた内容、店員さんの雰囲気など、自由に書いてください。"
+              value={memoPublic}
+              onChange={(e) => setMemoPublic(e.target.value)}
+              rows={4}
+              placeholder="植物性ミルクあり、米粉スイーツあり、相談しやすかった、副菜変更対応してくれた…"
+            />
+          </div>
+
+          {/* 自分メモ */}
+          <div>
+            <FieldLabel>
+              自分メモ
+              <span className="text-stone-400 font-normal text-xs ml-2">任意・自分だけに表示</span>
+            </FieldLabel>
+            <Textarea
+              value={memoPrivate}
+              onChange={(e) => setMemoPrivate(e.target.value)}
+              rows={4}
+              placeholder="味濃いめ、また行きたい、雰囲気好き、個人的に好みだった…"
             />
           </div>
 
