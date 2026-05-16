@@ -9,6 +9,8 @@ export interface Restaurant {
   lat: number
   lng: number
   comment: string | null
+  memo_public: string | null
+  memo_private: string | null
   status: RestaurantStatus
   tags: string[]
   session_id: string
