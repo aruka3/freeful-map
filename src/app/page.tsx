@@ -153,7 +153,7 @@ export default function HomePage() {
                   <Link
                     key={r.id}
                     href={`/restaurants/${r.id}`}
-                    className="block w-full text-left p-4 hover:bg-stone-50 transition-colors"
+                    className={`block w-full text-left p-4 hover:bg-stone-50 transition-colors ${r.has_storefront === false ? 'bg-stone-50' : ''}`}
                   >
                     <div className="flex items-start gap-3">
                       <div className="w-3 h-3 rounded-full mt-1.5 shrink-0" style={{ backgroundColor: c.color }} />
