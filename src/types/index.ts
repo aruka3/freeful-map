@@ -11,6 +11,7 @@ export interface Restaurant {
   comment: string | null
   memo_public: string | null
   memo_private: string | null
+  has_storefront: boolean
   status: RestaurantStatus
   tags: string[]
   session_id: string

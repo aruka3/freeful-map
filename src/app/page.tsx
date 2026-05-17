@@ -35,6 +35,11 @@ export default function HomePage() {
     [restaurants, filter]
   )
 
+  const mapRestaurants = useMemo(
+    () => filtered.filter((r) => r.has_storefront !== false),
+    [filtered]
+  )
+
   const handlePinClick = useCallback((r: Restaurant) => setSelected(r), [])
 
   return (
@@ -107,7 +112,7 @@ export default function HomePage() {
               </div>
             </div>
           ) : (
-            <MapView restaurants={filtered} onPinClick={handlePinClick} />
+            <MapView restaurants={mapRestaurants} onPinClick={handlePinClick} />
           )}
 
           {selected && (
@@ -153,10 +158,15 @@ export default function HomePage() {
                     <div className="flex items-start gap-3">
                       <div className="w-3 h-3 rounded-full mt-1.5 shrink-0" style={{ backgroundColor: c.color }} />
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-stone-800 truncate">{r.name}</p>
+                        <div className="flex items-center gap-1.5">
+                          <p className="text-sm font-semibold text-stone-800 truncate">{r.name}</p>
+                          {r.has_storefront === false && (
+                            <span className="shrink-0 text-[10px] font-medium text-stone-400 bg-stone-100 px-1.5 py-0.5 rounded-full">実店舗なし</span>
+                          )}
+                        </div>
                         <p className="text-xs text-stone-400 truncate mt-0.5">{r.address}</p>
-                        {r.comment && (
-                          <p className="text-xs text-stone-500 mt-1 line-clamp-1">{r.comment}</p>
+                        {(r.memo_public ?? r.comment) && (
+                          <p className="text-xs text-stone-500 mt-1 line-clamp-1">{r.memo_public ?? r.comment}</p>
                         )}
                       </div>
                       <svg className="w-4 h-4 text-stone-300 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

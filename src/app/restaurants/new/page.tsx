@@ -19,6 +19,7 @@ export default function NewRestaurantPage() {
   const [lat, setLat] = useState(DEFAULT_LAT)
   const [lng, setLng] = useState(DEFAULT_LNG)
   const [status, setStatus] = useState<RestaurantStatus>('want_to_visit')
+  const [hasStorefront, setHasStorefront] = useState(true)
   const [tags, setTags] = useState<string[]>([])
   const [memoPublic, setMemoPublic] = useState('')
   const [memoPrivate, setMemoPrivate] = useState('')
@@ -65,6 +66,7 @@ export default function NewRestaurantPage() {
         comment: null,
         memo_public: memoPublic.trim() || null,
         memo_private: memoPrivate.trim() || null,
+        has_storefront: hasStorefront,
         status,
         tags,
         session_id: getSessionId(),
@@ -171,6 +173,34 @@ export default function NewRestaurantPage() {
                 </div>
               </div>
             )}
+          </div>
+
+          {/* 実店舗 */}
+          <div>
+            <FieldLabel>実店舗</FieldLabel>
+            <div className="grid grid-cols-2 gap-3">
+              {([
+                { value: true, label: '実店舗あり', emoji: '🏪' },
+                { value: false, label: '実店舗なし', emoji: '🛒' },
+              ] as { value: boolean; label: string; emoji: string }[]).map((opt) => (
+                <button
+                  key={String(opt.value)}
+                  type="button"
+                  onClick={() => setHasStorefront(opt.value)}
+                  className={`flex items-center gap-3 p-4 rounded-2xl border-2 transition-all ${
+                    hasStorefront === opt.value
+                      ? 'border-emerald-400 bg-emerald-50'
+                      : 'border-stone-200 bg-white hover:border-stone-300'
+                  }`}
+                >
+                  <span className="text-2xl">{opt.emoji}</span>
+                  <span className={`text-sm font-semibold ${hasStorefront === opt.value ? 'text-emerald-700' : 'text-stone-600'}`}>
+                    {opt.label}
+                  </span>
+                </button>
+              ))}
+            </div>
+            <p className="text-xs text-stone-400 mt-1.5">実店舗なしの場合は地図に表示されません。イベント・オンライン販売などは共有メモに記入してください。</p>
           </div>
 
           {/* ステータス */}
