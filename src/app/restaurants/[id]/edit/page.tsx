@@ -68,8 +68,8 @@ export default function EditRestaurantPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!name.trim() || !address.trim()) {
-      setError('店名と住所は必須です。')
+    if (!name.trim() || (hasStorefront && !address.trim())) {
+      setError(hasStorefront ? '店名と住所は必須です。' : '店名は必須です。')
       return
     }
     setSubmitting(true)
@@ -138,7 +138,6 @@ export default function EditRestaurantPage() {
               <Input
                 value={address}
                 onChange={(e) => { setAddress(e.target.value); setGeoMsg(null) }}
-                required
                 className="flex-1"
               />
               <button

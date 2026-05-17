@@ -51,8 +51,8 @@ export default function NewRestaurantPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!name.trim() || !address.trim()) {
-      setError('店名と住所は必須です。')
+    if (!name.trim() || (hasStorefront && !address.trim())) {
+      setError(hasStorefront ? '店名と住所は必須です。' : '店名は必須です。')
       return
     }
     setSubmitting(true)
@@ -290,7 +290,7 @@ export default function NewRestaurantPage() {
 
           <button
             type="submit"
-            disabled={submitting || !name.trim() || !address.trim()}
+            disabled={submitting || !name.trim() || (hasStorefront && !address.trim())}
             className="w-full py-4 rounded-2xl bg-emerald-600 hover:bg-emerald-700 disabled:bg-stone-200 disabled:text-stone-400 text-white text-sm font-bold transition-colors"
           >
             {submitting ? '登録中…' : '記録する'}
