@@ -19,6 +19,7 @@ export default function EditRestaurantPage() {
   const [lat, setLat] = useState(0)
   const [lng, setLng] = useState(0)
   const [status, setStatus] = useState<RestaurantStatus>('want_to_visit')
+  const [hasStorefront, setHasStorefront] = useState(true)
   const [tags, setTags] = useState<string[]>([])
   const [memoPublic, setMemoPublic] = useState('')
   const [memoPrivate, setMemoPrivate] = useState('')
@@ -35,6 +36,7 @@ export default function EditRestaurantPage() {
         setLat(r.lat)
         setLng(r.lng)
         setStatus(r.status)
+        setHasStorefront(r.has_storefront ?? true)
         setTags(r.tags ?? [])
         setMemoPublic(r.memo_public ?? r.comment ?? '')
         setMemoPrivate(r.memo_private ?? '')
@@ -81,6 +83,7 @@ export default function EditRestaurantPage() {
         comment: null,
         memo_public: memoPublic.trim() || null,
         memo_private: memoPrivate.trim() || null,
+        has_storefront: hasStorefront,
         status,
         tags,
         session_id: sessionId,
@@ -169,6 +172,33 @@ export default function EditRestaurantPage() {
                 {' — '}住所を変更した場合は「座標再取得」を押してください
               </p>
             )}
+          </div>
+
+          <div>
+            <FieldLabel>実店舗</FieldLabel>
+            <div className="grid grid-cols-2 gap-3">
+              {([
+                { value: true, label: '実店舗あり', emoji: '🏪' },
+                { value: false, label: '実店舗なし', emoji: '🛒' },
+              ] as { value: boolean; label: string; emoji: string }[]).map((opt) => (
+                <button
+                  key={String(opt.value)}
+                  type="button"
+                  onClick={() => setHasStorefront(opt.value)}
+                  className={`flex items-center gap-3 p-4 rounded-2xl border-2 transition-all ${
+                    hasStorefront === opt.value
+                      ? 'border-emerald-400 bg-emerald-50'
+                      : 'border-stone-200 bg-white hover:border-stone-300'
+                  }`}
+                >
+                  <span className="text-2xl">{opt.emoji}</span>
+                  <span className={`text-sm font-semibold ${hasStorefront === opt.value ? 'text-emerald-700' : 'text-stone-600'}`}>
+                    {opt.label}
+                  </span>
+                </button>
+              ))}
+            </div>
+            <p className="text-xs text-stone-400 mt-1.5">実店舗なしの場合は地図に表示されません。</p>
           </div>
 
           <div>

@@ -78,9 +78,14 @@ export default function RestaurantDetailPage() {
         <div className="bg-white rounded-2xl p-5 shadow-sm border border-stone-100">
           <div className="flex items-start justify-between gap-3 mb-3">
             <h2 className="text-xl font-bold text-stone-800">{restaurant.name}</h2>
-            <span className={`shrink-0 text-xs font-medium px-3 py-1 rounded-full ${statusConfig.bgColor} ${statusConfig.textColor}`}>
-              {statusConfig.label}
-            </span>
+            <div className="flex items-center gap-1.5 shrink-0">
+              {restaurant.has_storefront === false && (
+                <span className="text-xs font-medium text-stone-400 bg-stone-100 px-2.5 py-1 rounded-full">実店舗なし</span>
+              )}
+              <span className={`text-xs font-medium px-3 py-1 rounded-full ${statusConfig.bgColor} ${statusConfig.textColor}`}>
+                {statusConfig.label}
+              </span>
+            </div>
           </div>
 
           <p className="text-sm text-stone-500 flex items-start gap-1.5">
