@@ -57,6 +57,24 @@ export default function MapView({ restaurants, onPinClick }: MapViewProps) {
       markersRef.current.forEach((m) => m.remove())
       markersRef.current = []
 
+      // 同じ座標のピンをずらす
+      const coordCount = new Map<string, number>()
+      const coordIndex = new Map<string, number>()
+      restaurants.forEach((r) => {
+        const key = `${r.lat.toFixed(6)},${r.lng.toFixed(6)}`
+        coordCount.set(key, (coordCount.get(key) ?? 0) + 1)
+      })
+      const offsetPin = (lat: number, lng: number): [number, number] => {
+        const key = `${lat.toFixed(6)},${lng.toFixed(6)}`
+        const total = coordCount.get(key) ?? 1
+        if (total === 1) return [lat, lng]
+        const idx = coordIndex.get(key) ?? 0
+        coordIndex.set(key, idx + 1)
+        const angle = (2 * Math.PI * idx) / total
+        const d = 0.00015
+        return [lat + d * Math.cos(angle), lng + d * Math.sin(angle)]
+      }
+
       restaurants.forEach((restaurant) => {
         const config = STATUS_CONFIG[restaurant.status]
         const svgIcon = `
@@ -74,7 +92,8 @@ export default function MapView({ restaurants, onPinClick }: MapViewProps) {
           popupAnchor: [0, -42],
         })
 
-        const marker = L.marker([restaurant.lat, restaurant.lng], { icon })
+        const [lat, lng] = offsetPin(restaurant.lat, restaurant.lng)
+        const marker = L.marker([lat, lng], { icon })
           .addTo(mapInstanceRef.current!)
           .bindTooltip(restaurant.name, {
             permanent: false,
