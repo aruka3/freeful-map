@@ -97,7 +97,7 @@ export default function RestaurantDetailPage() {
           </p>
 
           <a
-            href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(restaurant.name)}&query_place_id=&center=${restaurant.lat},${restaurant.lng}`}
+            href={`https://www.google.com/maps?q=${restaurant.lat},${restaurant.lng}`}
             target="_blank"
             rel="noopener noreferrer"
             className="mt-3 flex items-center gap-2 text-xs font-medium text-emerald-600 hover:text-emerald-700 transition-colors"
