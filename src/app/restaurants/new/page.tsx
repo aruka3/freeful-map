@@ -3,11 +3,14 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import dynamic from 'next/dynamic'
 import FieldLabel, { Input, Textarea } from '@/components/form/FieldLabel'
 import { createRestaurant } from '@/lib/supabase'
 import { getSessionId } from '@/lib/session'
 import { TAG_CONFIG, ALL_TAGS } from '@/utils/constants'
 import type { RestaurantStatus } from '@/types'
+
+const MiniMap = dynamic(() => import('@/components/map/MiniMap'), { ssr: false })
 
 const DEFAULT_LAT = 35.6762
 const DEFAULT_LNG = 139.6503
@@ -171,6 +174,17 @@ export default function NewRestaurantPage() {
                   <Input type="number" step="0.0001" value={lng}
                     onChange={(e) => setLng(parseFloat(e.target.value) || DEFAULT_LNG)} />
                 </div>
+              </div>
+            )}
+            {geoMsg?.type === 'ok' && (
+              <div className="mt-3">
+                <p className="text-xs text-stone-400 mb-1.5">ピンをドラッグして位置を微調整できます</p>
+                <MiniMap
+                  lat={lat}
+                  lng={lng}
+                  onMove={(newLat, newLng) => { setLat(newLat); setLng(newLng) }}
+                  className="w-full h-52 rounded-xl overflow-hidden border border-stone-200"
+                />
               </div>
             )}
           </div>
