@@ -3,10 +3,13 @@
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
+import dynamic from 'next/dynamic'
 import { fetchRestaurant, updateRestaurant } from '@/lib/supabase'
 import FieldLabel, { Input, Textarea } from '@/components/form/FieldLabel'
 import { TAG_CONFIG, ALL_TAGS } from '@/utils/constants'
 import type { RestaurantStatus } from '@/types'
+
+const MiniMap = dynamic(() => import('@/components/map/MiniMap'), { ssr: false })
 
 export default function EditRestaurantPage() {
   const { id } = useParams<{ id: string }>()
@@ -167,9 +170,20 @@ export default function EditRestaurantPage() {
             )}
             {!geoMsg && lat !== 0 && (
               <p className="text-xs text-stone-400 mt-1.5">
-                現在の座標: {lat.toFixed(4)}, {lng.toFixed(4)}
-                {' — '}住所を変更した場合は「座標再取得」を押してください
+                住所を変更した場合は「座標再取得」を押してください
               </p>
+            )}
+            {lat !== 0 && (
+              <div className="mt-3">
+                <p className="text-xs text-stone-400 mb-1.5">ピンをドラッグして位置を微調整できます</p>
+                <MiniMap
+                  lat={lat}
+                  lng={lng}
+                  onMove={(newLat, newLng) => { setLat(newLat); setLng(newLng) }}
+                  className="w-full h-52 rounded-xl overflow-hidden border border-stone-200"
+                />
+                <p className="text-xs text-stone-400 mt-1">現在の座標: {lat.toFixed(5)}, {lng.toFixed(5)}</p>
+              </div>
             )}
           </div>
 
