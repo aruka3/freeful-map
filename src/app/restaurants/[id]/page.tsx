@@ -3,10 +3,13 @@
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
+import dynamic from 'next/dynamic'
 import { fetchRestaurant, deleteRestaurant } from '@/lib/supabase'
 import { getSessionId } from '@/lib/session'
 import { STATUS_CONFIG, TAG_CONFIG } from '@/utils/constants'
 import type { Restaurant } from '@/types'
+
+const MiniMap = dynamic(() => import('@/components/map/MiniMap'), { ssr: false })
 
 export default function RestaurantDetailPage() {
   const { id } = useParams<{ id: string }>()
@@ -107,6 +110,16 @@ export default function RestaurantDetailPage() {
             </svg>
             Googleマップで開く・経路を調べる
           </a>
+
+          {restaurant.has_storefront !== false && (
+            <div className="mt-3">
+              <MiniMap
+                lat={restaurant.lat}
+                lng={restaurant.lng}
+                className="w-full h-48 rounded-xl overflow-hidden border border-stone-100"
+              />
+            </div>
+          )}
 
           {restaurant.tags?.length > 0 && (
             <div className="flex gap-1.5 mt-3 flex-wrap">
