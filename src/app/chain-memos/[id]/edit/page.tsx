@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { fetchChainMemo, updateChainMemo } from '@/lib/supabase'
+import { fetchChainMemo, updateChainMemo } from '@/lib/api'
 import FieldLabel, { Input, Textarea } from '@/components/form/FieldLabel'
 
 export default function EditChainMemoPage() {

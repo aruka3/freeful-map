@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { fetchChainMemo, deleteChainMemo } from '@/lib/supabase'
+import { fetchChainMemo, deleteChainMemo } from '@/lib/api'
 import type { ChainMemo } from '@/types'
 
 function parseLines(text: string) {
