@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback, useMemo } from 'react'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
-import { fetchRestaurants } from '@/lib/api'
+import { fetchRestaurants } from '@/lib/supabase'
 import FilterPanel from '@/components/map/FilterPanel'
 import RestaurantPopup from '@/components/map/RestaurantPopup'
 import type { Restaurant, FilterState, RestaurantStatus } from '@/types'
