@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { createChainMemo } from '@/lib/supabase'
+import { createChainMemo } from '@/lib/api'
 import { getSessionId } from '@/lib/session'
 import FieldLabel, { Input, Textarea } from '@/components/form/FieldLabel'
 
