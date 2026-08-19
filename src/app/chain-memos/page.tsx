@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { fetchChainMemos } from '@/lib/supabase'
+import { fetchChainMemos } from '@/lib/api'
 import type { ChainMemo } from '@/types'
 
 function parseLines(text: string) {
