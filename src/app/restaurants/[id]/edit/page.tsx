@@ -257,7 +257,7 @@ export default function EditRestaurantPage() {
               対応タグ
               <span className="text-stone-400 font-normal text-xs ml-2">複数選択可</span>
             </FieldLabel>
-            <div className="flex flex-col gap-2">
+            <div className="flex gap-2">
               {ALL_TAGS.map((tag) => {
                 const active = tags.includes(tag)
                 return (
@@ -265,20 +265,18 @@ export default function EditRestaurantPage() {
                     key={tag}
                     type="button"
                     onClick={() => setTags(active ? tags.filter((t) => t !== tag) : [...tags, tag])}
-                    className={`flex items-center justify-between px-4 py-3 rounded-xl border-2 text-sm font-semibold transition-all ${
+                    className={`flex-1 py-3 rounded-xl border-2 text-sm font-semibold transition-all ${
                       active
                         ? 'border-emerald-400 bg-emerald-50 text-emerald-700'
-                        : 'border-stone-200 bg-white text-stone-500 hover:border-stone-300'
+                        : 'border-stone-200 bg-white text-stone-400 hover:border-stone-300'
                     }`}
                   >
-                    <span>{TAG_CONFIG[tag].label}</span>
-                    <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${active ? 'bg-emerald-200 text-emerald-800' : 'bg-stone-100 text-stone-400'}`}>
-                      {active ? 'あり' : 'なし'}
-                    </span>
+                    {TAG_CONFIG[tag].short}
                   </button>
                 )
               })}
             </div>
+            <p className="text-xs text-stone-400 mt-1.5">GF: グルテンフリー　CF: カゼインフリー　SF: 白砂糖フリー</p>
           </div>
 
           <div>
