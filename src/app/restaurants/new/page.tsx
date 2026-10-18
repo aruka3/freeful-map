@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
 import FieldLabel, { Input, Textarea } from '@/components/form/FieldLabel'
-import { createRestaurant } from '@/lib/api'
+import { createRestaurant, fetchRestaurants } from '@/lib/api'
 import { getSessionId } from '@/lib/session'
 import { TAG_CONFIG, ALL_TAGS } from '@/utils/constants'
 import type { RestaurantStatus } from '@/types'
@@ -31,6 +31,7 @@ export default function NewRestaurantPage() {
   const [geoMsg, setGeoMsg] = useState<{ type: 'ok' | 'error'; text: string } | null>(null)
   const [showManual, setShowManual] = useState(false)
   const [error, setError] = useState('')
+  const [duplicateWarning, setDuplicateWarning] = useState(false)
 
   const geocode = async () => {
     if (!address.trim()) return
@@ -52,14 +53,10 @@ export default function NewRestaurantPage() {
     setGeoLoading(false)
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!name.trim() || (hasStorefront && !address.trim())) {
-      setError(hasStorefront ? '店名と住所は必須です。' : '店名は必須です。')
-      return
-    }
+  const doCreate = async () => {
     setSubmitting(true)
     setError('')
+    setDuplicateWarning(false)
     try {
       const restaurant = await createRestaurant({
         name: name.trim(),
@@ -76,11 +73,39 @@ export default function NewRestaurantPage() {
       })
       router.push(`/restaurants/${restaurant.id}`)
     } catch (e) {
-      setError('登録に失敗しました。Supabaseの設定を確認してください。')
+      setError('登録に失敗しました。')
       console.error(e)
     }
     setSubmitting(false)
   }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!name.trim() || (hasStorefront && !address.trim())) {
+      setError(hasStorefront ? '店名と住所は必須です。' : '店名は必須です。')
+      return
+    }
+    if (duplicateWarning) {
+      await doCreate()
+      return
+    }
+    setSubmitting(true)
+    setError('')
+    try {
+      const existing = await fetchRestaurants()
+      const dup = existing.find((r) => r.name.trim() === name.trim())
+      if (dup) {
+        setDuplicateWarning(true)
+        setSubmitting(false)
+        return
+      }
+    } catch {
+      // チェック失敗しても登録は続行
+    }
+    setSubmitting(false)
+    await doCreate()
+  }
+
 
   return (
     <div className="min-h-screen bg-stone-50">
@@ -100,6 +125,28 @@ export default function NewRestaurantPage() {
           {error && (
             <div className="bg-rose-50 border border-rose-200 text-rose-700 text-sm rounded-xl p-4">
               {error}
+            </div>
+          )}
+
+          {duplicateWarning && (
+            <div className="bg-amber-50 border border-amber-300 text-amber-800 text-sm rounded-xl p-4 space-y-3">
+              <p className="font-semibold">「{name}」はすでに登録されています。</p>
+              <p>同じ名前のお店を追加しますか？</p>
+              <div className="flex gap-2">
+                <button
+                  type="submit"
+                  className="flex-1 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-sm font-bold transition-colors"
+                >
+                  追加する
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setDuplicateWarning(false)}
+                  className="flex-1 py-2 rounded-xl bg-white border border-amber-300 text-amber-700 text-sm font-bold transition-colors"
+                >
+                  キャンセル
+                </button>
+              </div>
             </div>
           )}
 
