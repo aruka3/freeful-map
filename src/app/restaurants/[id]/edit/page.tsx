@@ -100,7 +100,7 @@ export default function EditRestaurantPage() {
         has_storefront: hasStorefront,
         status,
         tags,
-        session_id: getSessionId(),
+        session_id: '',
       })
       setSaved(true)
       setTimeout(() => { window.location.href = `/restaurants/${id}` }, 800)
