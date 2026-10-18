@@ -168,11 +168,14 @@ export default function RestaurantDetailPage() {
           )}
 
           {restaurant.tags?.length > 0 && (
-            <div className="flex gap-1.5 mt-3 flex-wrap">
+            <div className="mt-4 space-y-1.5">
               {restaurant.tags.map((tag) => (
-                <span key={tag} className="text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-700">
-                  {TAG_CONFIG[tag]?.short ?? tag}
-                </span>
+                <div key={tag} className="flex items-center gap-2 px-3 py-2 rounded-xl bg-emerald-50 border border-emerald-200">
+                  <svg className="w-4 h-4 text-emerald-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span className="text-sm font-semibold text-emerald-800">{TAG_CONFIG[tag]?.label ?? tag}</span>
+                </div>
               ))}
             </div>
           )}
