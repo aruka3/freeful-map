@@ -37,8 +37,12 @@ export default function NewRestaurantPage() {
   useEffect(() => {
     fetch('/api/auth/session')
       .then((r) => r.json())
-      .then((data) => setUserEmail(data?.user?.email ?? null))
-      .catch(() => setUserEmail(null))
+      .then((data) => {
+        const email = data?.user?.email ?? null
+        setUserEmail(email)
+        if (!email) window.location.href = '/login'
+      })
+      .catch(() => { setUserEmail(null); window.location.href = '/login' })
   }, [])
 
   const geocode = async () => {
