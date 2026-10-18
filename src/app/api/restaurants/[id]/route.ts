@@ -12,11 +12,8 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   const { id } = await params
   const sessionId = req.headers.get('x-session-id') ?? ''
 
-  const existing = await sql`SELECT session_id FROM restaurants WHERE id = ${id}`
+  const existing = await sql`SELECT id FROM restaurants WHERE id = ${id}`
   if (!existing.length) return NextResponse.json({ error: 'Not found' }, { status: 404 })
-  if (existing[0].session_id !== sessionId) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-  }
 
   const body = await req.json()
   const {
@@ -36,6 +33,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       has_storefront = ${has_storefront ?? true},
       status = ${status},
       tags = ${tags ?? []},
+      session_id = ${sessionId || body.session_id || ''},
       updated_at = NOW()
     WHERE id = ${id}
     RETURNING *
@@ -43,16 +41,10 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   return NextResponse.json(rows[0])
 }
 
-export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function DELETE(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  const sessionId = req.headers.get('x-session-id') ?? ''
-
-  const existing = await sql`SELECT session_id FROM restaurants WHERE id = ${id}`
+  const existing = await sql`SELECT id FROM restaurants WHERE id = ${id}`
   if (!existing.length) return NextResponse.json({ error: 'Not found' }, { status: 404 })
-  if (existing[0].session_id !== sessionId) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-  }
-
   await sql`DELETE FROM restaurants WHERE id = ${id}`
   return new NextResponse(null, { status: 204 })
 }
