@@ -3,20 +3,36 @@ export default function LoginPage() {
     <div className="min-h-screen bg-stone-50 flex items-center justify-center px-4">
       <div className="bg-white rounded-2xl shadow-sm border border-stone-100 p-8 w-full max-w-sm text-center space-y-6">
         <div>
-          <h1 className="text-xl font-bold text-stone-800">ログイン</h1>
-          <p className="text-sm text-stone-500 mt-2">
-            ログインすると自分メモの閲覧・編集ができます
-          </p>
+          <span className="text-3xl">🌿</span>
+          <h1 className="text-xl font-bold text-stone-800 mt-2">Freeful Map</h1>
+          <p className="text-sm text-stone-500 mt-1">Googleアカウントでログイン</p>
         </div>
 
-        <div className="space-y-2 text-sm text-stone-500 bg-stone-50 rounded-xl p-4 text-left">
-          <p>ログインなし: マップ閲覧、共有メモの閲覧</p>
-          <p>ログインあり: 自分メモの閲覧・編集、お店の追加・編集</p>
+        <div className="space-y-3 text-left">
+          <div className="flex items-center gap-3 text-sm text-stone-600">
+            <span className="text-lg">🗺️</span>
+            <span>マップ・お店一覧を閲覧</span>
+          </div>
+          <div className="flex items-center gap-3 text-sm text-stone-400">
+            <span className="text-lg">🔖</span>
+            <span>「行きたい」「行った」を記録</span>
+            <span className="text-xs bg-stone-100 text-stone-400 px-2 py-0.5 rounded-full">要ログイン</span>
+          </div>
+          <div className="flex items-center gap-3 text-sm text-stone-400">
+            <span className="text-lg">🔒</span>
+            <span>自分だけの自分メモ</span>
+            <span className="text-xs bg-stone-100 text-stone-400 px-2 py-0.5 rounded-full">要ログイン</span>
+          </div>
+          <div className="flex items-center gap-3 text-sm text-stone-400">
+            <span className="text-lg">✏️</span>
+            <span>お店の追加・編集</span>
+            <span className="text-xs bg-stone-100 text-stone-400 px-2 py-0.5 rounded-full">要ログイン</span>
+          </div>
         </div>
 
         <a
           href="/api/auth/signin/google?callbackUrl=/"
-          className="flex items-center justify-center gap-3 w-full py-3 px-4 rounded-xl border border-stone-200 bg-white hover:bg-stone-50 transition-colors text-stone-700 font-medium text-sm"
+          className="flex items-center justify-center gap-3 w-full py-3.5 px-4 rounded-xl border-2 border-stone-200 bg-white hover:bg-stone-50 hover:border-stone-300 transition-colors text-stone-700 font-semibold text-sm"
         >
           <svg className="w-5 h-5" viewBox="0 0 24 24">
             <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -28,7 +44,7 @@ export default function LoginPage() {
         </a>
 
         <a href="/" className="block text-sm text-stone-400 hover:text-stone-600">
-          ← マップに戻る
+          ← ログインせずに閲覧する
         </a>
       </div>
     </div>
