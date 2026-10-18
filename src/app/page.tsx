@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { fetchRestaurants } from '@/lib/api'
 import FilterPanel from '@/components/map/FilterPanel'
 import RestaurantPopup from '@/components/map/RestaurantPopup'
+import AuthButton from '@/components/auth/AuthButton'
 import type { Restaurant, FilterState, RestaurantStatus } from '@/types'
 import { STATUS_CONFIG } from '@/utils/constants'
 
@@ -54,6 +55,7 @@ export default function HomePage() {
             </span>
           </div>
           <div className="flex items-center gap-2">
+            <AuthButton />
             <button
               onClick={() => setShowList(!showList)}
               className="sm:hidden text-xs text-stone-500 hover:text-stone-700 px-3 py-1.5 rounded-lg hover:bg-stone-100 transition-colors"

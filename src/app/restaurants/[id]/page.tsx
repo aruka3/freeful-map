@@ -5,7 +5,6 @@ import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
 import { fetchRestaurant, deleteRestaurant } from '@/lib/api'
-import { getSessionId } from '@/lib/session'
 import { STATUS_CONFIG, TAG_CONFIG } from '@/utils/constants'
 import type { Restaurant } from '@/types'
 
@@ -17,6 +16,14 @@ export default function RestaurantDetailPage() {
   const [restaurant, setRestaurant] = useState<Restaurant | null>(null)
   const [loading, setLoading] = useState(true)
   const [deleting, setDeleting] = useState(false)
+  const [userEmail, setUserEmail] = useState<string | null>(null)
+
+  useEffect(() => {
+    fetch('/api/auth/session')
+      .then((r) => r.json())
+      .then((data) => setUserEmail(data?.user?.email ?? null))
+      .catch(() => setUserEmail(null))
+  }, [])
 
   useEffect(() => {
     fetchRestaurant(id)
@@ -43,7 +50,7 @@ export default function RestaurantDetailPage() {
   if (!restaurant) return null
 
   const statusConfig = STATUS_CONFIG[restaurant.status]
-  const isOwner = restaurant.session_id === getSessionId()
+  const isOwner = !!(userEmail && restaurant.user_email === userEmail)
   const memoPublic = restaurant.memo_public ?? restaurant.comment
   const memoPrivate = restaurant.memo_private
 

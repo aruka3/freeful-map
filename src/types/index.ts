@@ -15,6 +15,7 @@ export interface Restaurant {
   status: RestaurantStatus
   tags: string[]
   session_id: string
+  user_email?: string | null
 }
 
 export type RestaurantInsert = Omit<Restaurant, 'id' | 'created_at' | 'updated_at'>
