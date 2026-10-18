@@ -1,11 +1,12 @@
 'use client'
 
-import { useEffect, useState, useCallback, useMemo } from 'react'
+import { useEffect, useState, useCallback, useMemo, useRef } from 'react'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { fetchRestaurants } from '@/lib/api'
 import FilterPanel from '@/components/map/FilterPanel'
 import RestaurantPopup from '@/components/map/RestaurantPopup'
+import AuthButton from '@/components/auth/AuthButton'
 import type { Restaurant, FilterState, RestaurantStatus } from '@/types'
 import { STATUS_CONFIG } from '@/utils/constants'
 
@@ -22,6 +23,14 @@ export default function HomePage() {
   const [filter, setFilter] = useState<FilterState>(DEFAULT_FILTER)
   const [selected, setSelected] = useState<Restaurant | null>(null)
   const [showList, setShowList] = useState(false)
+  const [userEmail, setUserEmail] = useState<string | null>(null)
+
+  useEffect(() => {
+    fetch('/api/auth/session')
+      .then((r) => r.json())
+      .then((data) => setUserEmail(data?.user?.email ?? null))
+      .catch(() => setUserEmail(null))
+  }, [])
 
   useEffect(() => {
     fetchRestaurants()
@@ -30,8 +39,21 @@ export default function HomePage() {
       .finally(() => setLoading(false))
   }, [])
 
+  const handleStatusChange = useCallback(async (restaurantId: string, status: RestaurantStatus) => {
+    await fetch(`/api/restaurants/${restaurantId}/status`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status }),
+    })
+    setRestaurants((prev) => prev.map((r) => r.id === restaurantId ? { ...r, user_status: status } : r))
+    setSelected((prev) => prev?.id === restaurantId ? { ...prev, user_status: status } : prev)
+  }, [])
+
   const filtered = useMemo(
-    () => restaurants.filter((r) => filter.status.includes(r.status)),
+    () => restaurants.filter((r) => {
+      if (!r.user_status) return true
+      return filter.status.includes(r.user_status)
+    }),
     [restaurants, filter]
   )
 
@@ -54,6 +76,7 @@ export default function HomePage() {
             </span>
           </div>
           <div className="flex items-center gap-2">
+            <AuthButton />
             <button
               onClick={() => setShowList(!showList)}
               className="sm:hidden text-xs text-stone-500 hover:text-stone-700 px-3 py-1.5 rounded-lg hover:bg-stone-100 transition-colors"
@@ -116,7 +139,12 @@ export default function HomePage() {
           )}
 
           {selected && (
-            <RestaurantPopup restaurant={selected} onClose={() => setSelected(null)} />
+            <RestaurantPopup
+              restaurant={selected}
+              onClose={() => setSelected(null)}
+              userEmail={userEmail}
+              onStatusChange={handleStatusChange}
+            />
           )}
 
           {!loading && !error && (
@@ -148,7 +176,7 @@ export default function HomePage() {
           ) : (
             <div className="divide-y divide-stone-50">
               {filtered.map((r) => {
-                const c = STATUS_CONFIG[r.status]
+                const dotColor = r.user_status ? STATUS_CONFIG[r.user_status].color : '#d6d3d1'
                 return (
                   <Link
                     key={r.id}
@@ -156,7 +184,7 @@ export default function HomePage() {
                     className={`block w-full text-left p-4 transition-colors ${r.has_storefront === false ? 'bg-amber-50 hover:bg-amber-100' : 'hover:bg-stone-50'}`}
                   >
                     <div className="flex items-start gap-3">
-                      <div className="w-3 h-3 rounded-full mt-1.5 shrink-0" style={{ backgroundColor: c.color }} />
+                      <div className="w-3 h-3 rounded-full mt-1.5 shrink-0" style={{ backgroundColor: dotColor }} />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-1.5">
                           <p className="text-sm font-semibold text-stone-800 truncate">{r.name}</p>

@@ -1,13 +1,12 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
 import { fetchRestaurant, deleteRestaurant } from '@/lib/api'
-import { getSessionId } from '@/lib/session'
 import { STATUS_CONFIG, TAG_CONFIG } from '@/utils/constants'
-import type { Restaurant } from '@/types'
+import type { Restaurant, RestaurantStatus } from '@/types'
 
 const MiniMap = dynamic(() => import('@/components/map/MiniMap'), { ssr: false })
 
@@ -17,6 +16,15 @@ export default function RestaurantDetailPage() {
   const [restaurant, setRestaurant] = useState<Restaurant | null>(null)
   const [loading, setLoading] = useState(true)
   const [deleting, setDeleting] = useState(false)
+  const [userEmail, setUserEmail] = useState<string | null>(null)
+  const [statusSaving, setStatusSaving] = useState(false)
+
+  useEffect(() => {
+    fetch('/api/auth/session')
+      .then((r) => r.json())
+      .then((data) => setUserEmail(data?.user?.email ?? null))
+      .catch(() => setUserEmail(null))
+  }, [])
 
   useEffect(() => {
     fetchRestaurant(id)
@@ -24,6 +32,18 @@ export default function RestaurantDetailPage() {
       .catch(() => router.push('/'))
       .finally(() => setLoading(false))
   }, [id, router])
+
+  const handleStatusChange = useCallback(async (status: RestaurantStatus) => {
+    if (statusSaving) return
+    setStatusSaving(true)
+    await fetch(`/api/restaurants/${id}/status`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status }),
+    })
+    setRestaurant((prev) => prev ? { ...prev, user_status: status } : prev)
+    setStatusSaving(false)
+  }, [id, statusSaving])
 
   const handleDelete = async () => {
     if (!restaurant) return
@@ -42,8 +62,8 @@ export default function RestaurantDetailPage() {
   }
   if (!restaurant) return null
 
-  const statusConfig = STATUS_CONFIG[restaurant.status]
-  const isOwner = restaurant.session_id === getSessionId()
+  const statusConfig = restaurant.user_status ? STATUS_CONFIG[restaurant.user_status] : null
+  const isOwner = !!(userEmail && restaurant.user_email === userEmail)
   const memoPublic = restaurant.memo_public ?? restaurant.comment
   const memoPrivate = restaurant.memo_private
 
@@ -59,21 +79,23 @@ export default function RestaurantDetailPage() {
             </Link>
             <h1 className="font-bold text-stone-800 truncate">{restaurant.name}</h1>
           </div>
-          <div className="flex gap-2 shrink-0">
-            <Link
-              href={`/restaurants/${id}/edit`}
-              className="text-xs font-medium text-emerald-600 hover:text-emerald-700 px-3 py-1.5 rounded-lg hover:bg-emerald-50 transition-colors"
-            >
-              編集
-            </Link>
-            <button
-              onClick={handleDelete}
-              disabled={deleting}
-              className="text-xs font-medium text-rose-500 hover:text-rose-600 px-3 py-1.5 rounded-lg hover:bg-rose-50 transition-colors"
-            >
-              {deleting ? '削除中…' : '削除'}
-            </button>
-          </div>
+          {userEmail && (
+            <div className="flex gap-2 shrink-0">
+              <Link
+                href={`/restaurants/${id}/edit`}
+                className="text-xs font-medium text-emerald-600 hover:text-emerald-700 px-3 py-1.5 rounded-lg hover:bg-emerald-50 transition-colors"
+              >
+                編集
+              </Link>
+              <button
+                onClick={handleDelete}
+                disabled={deleting}
+                className="text-xs font-medium text-rose-500 hover:text-rose-600 px-3 py-1.5 rounded-lg hover:bg-rose-50 transition-colors"
+              >
+                {deleting ? '削除中…' : '削除'}
+              </button>
+            </div>
+          )}
         </div>
       </header>
 
@@ -81,15 +103,39 @@ export default function RestaurantDetailPage() {
         <div className="bg-white rounded-2xl p-5 shadow-sm border border-stone-100">
           <div className="flex items-start justify-between gap-3 mb-3">
             <h2 className="text-xl font-bold text-stone-800">{restaurant.name}</h2>
-            <div className="flex items-center gap-1.5 shrink-0">
-              {restaurant.has_storefront === false && (
-                <span className="text-xs font-medium text-stone-400 bg-stone-100 px-2.5 py-1 rounded-full">実店舗なし</span>
-              )}
+            {restaurant.has_storefront === false && (
+              <span className="text-xs font-medium text-stone-400 bg-stone-100 px-2.5 py-1 rounded-full shrink-0">実店舗なし</span>
+            )}
+          </div>
+
+          {userEmail ? (
+            <div className="flex gap-2 mb-3">
+              {(['want_to_visit', 'visited'] as RestaurantStatus[]).map((s) => {
+                const c = STATUS_CONFIG[s]
+                const active = restaurant.user_status === s
+                return (
+                  <button
+                    key={s}
+                    onClick={() => handleStatusChange(s)}
+                    disabled={statusSaving}
+                    className={`flex-1 py-2.5 rounded-xl text-sm font-bold border-2 transition-all ${
+                      active
+                        ? `${c.bgColor} ${c.textColor} border-transparent`
+                        : 'bg-white text-stone-400 border-stone-200 hover:border-stone-300'
+                    }`}
+                  >
+                    {s === 'want_to_visit' ? '🔖 行きたい' : '✅ 行った'}
+                  </button>
+                )
+              })}
+            </div>
+          ) : statusConfig ? (
+            <div className="mb-3">
               <span className={`text-xs font-medium px-3 py-1 rounded-full ${statusConfig.bgColor} ${statusConfig.textColor}`}>
                 {statusConfig.label}
               </span>
             </div>
-          </div>
+          ) : null}
 
           <p className="text-sm text-stone-500 flex items-start gap-1.5">
             <svg className="w-4 h-4 mt-0.5 shrink-0 text-stone-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -151,6 +197,28 @@ export default function RestaurantDetailPage() {
               <p className="text-sm text-stone-700 bg-amber-50 border border-amber-100 rounded-xl p-4 leading-relaxed whitespace-pre-wrap">
                 {memoPrivate}
               </p>
+            </div>
+          )}
+
+          {!userEmail && (
+            <div className="mt-4 border-t border-stone-100 pt-4">
+              <p className="text-xs text-stone-400 mb-3 font-medium">ログインするとできること</p>
+              <div className="space-y-2 text-sm text-stone-400">
+                <div className="flex items-center gap-2">
+                  <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                  <span>自分だけに見える「自分メモ」を書く</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                  <span>お店の情報を編集・削除する</span>
+                </div>
+              </div>
+              <a
+                href="/login"
+                className="mt-3 w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold transition-colors"
+              >
+                Googleでログイン
+              </a>
             </div>
           )}
         </div>
