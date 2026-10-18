@@ -14,6 +14,24 @@ export default function MapView({ restaurants, onPinClick }: MapViewProps) {
   const mapInstanceRef = useRef<import('leaflet').Map | null>(null)
   const markersRef = useRef<import('leaflet').Marker[]>([])
   const [mapReady, setMapReady] = useState(false)
+  const fittedRef = useRef(false)
+
+  const MAP_POS_KEY = 'freeful_map_position'
+
+  const savePosition = (map: import('leaflet').Map) => {
+    try {
+      const c = map.getCenter()
+      localStorage.setItem(MAP_POS_KEY, JSON.stringify({ lat: c.lat, lng: c.lng, zoom: map.getZoom() }))
+    } catch {}
+  }
+
+  const loadPosition = () => {
+    try {
+      const s = localStorage.getItem(MAP_POS_KEY)
+      if (s) return JSON.parse(s) as { lat: number; lng: number; zoom: number }
+    } catch {}
+    return null
+  }
 
   // 地図初期化
   useEffect(() => {
@@ -22,11 +40,16 @@ export default function MapView({ restaurants, onPinClick }: MapViewProps) {
     const initMap = async () => {
       const L = (await import('leaflet')).default
 
+      const saved = loadPosition()
+      if (saved) fittedRef.current = true
+
       const map = L.map(mapRef.current!, {
-        center: DEFAULT_CENTER,
-        zoom: DEFAULT_ZOOM,
+        center: saved ? [saved.lat, saved.lng] : DEFAULT_CENTER,
+        zoom: saved ? saved.zoom : DEFAULT_ZOOM,
         zoomControl: false,
       })
+
+      map.on('moveend zoomend', () => savePosition(map))
 
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
@@ -106,8 +129,9 @@ export default function MapView({ restaurants, onPinClick }: MapViewProps) {
         markersRef.current.push(marker)
       })
 
-      // 登録済みのピンが1件以上あれば、全ピンが見えるようにズーム
-      if (restaurants.length > 0 && mapInstanceRef.current) {
+      // 初回のみ全ピンが見えるようにズーム（保存済み位置がなければ）
+      if (!fittedRef.current && restaurants.length > 0 && mapInstanceRef.current) {
+        fittedRef.current = true
         const bounds = L.latLngBounds(restaurants.map((r) => [r.lat, r.lng]))
         mapInstanceRef.current.fitBounds(bounds, {
           padding: [60, 60],

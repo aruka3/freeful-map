@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
 import { fetchRestaurant, updateRestaurant } from '@/lib/api'
+import { getSessionId } from '@/lib/session'
 import FieldLabel, { Input, Textarea } from '@/components/form/FieldLabel'
 import { TAG_CONFIG, ALL_TAGS } from '@/utils/constants'
 import type { RestaurantStatus } from '@/types'
@@ -26,7 +27,6 @@ export default function EditRestaurantPage() {
   const [tags, setTags] = useState<string[]>([])
   const [memoPublic, setMemoPublic] = useState('')
   const [memoPrivate, setMemoPrivate] = useState('')
-  const [sessionId, setSessionId] = useState('')
   const [geoLoading, setGeoLoading] = useState(false)
   const [geoMsg, setGeoMsg] = useState<{ type: 'ok' | 'error'; text: string } | null>(null)
   const [saved, setSaved] = useState(false)
@@ -44,7 +44,6 @@ export default function EditRestaurantPage() {
         setTags(r.tags ?? [])
         setMemoPublic(r.memo_public ?? r.comment ?? '')
         setMemoPrivate(r.memo_private ?? '')
-        setSessionId(r.session_id)
       })
       .catch(() => router.push('/'))
       .finally(() => setLoading(false))
@@ -90,10 +89,10 @@ export default function EditRestaurantPage() {
         has_storefront: hasStorefront,
         status,
         tags,
-        session_id: sessionId,
+        session_id: getSessionId(),
       })
       setSaved(true)
-      setTimeout(() => router.push(`/restaurants/${id}`), 800)
+      setTimeout(() => { window.location.href = `/restaurants/${id}` }, 800)
     } catch (err) {
       console.error(err)
       const msg = err instanceof Error ? err.message : String(err)
