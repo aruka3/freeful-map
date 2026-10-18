@@ -10,7 +10,7 @@ export default function LoginPage() {
 
         <div className="space-y-2 text-left text-sm">
           <p className="text-stone-600">ログインすると、</p>
-          <ul className="space-y-1 text-stone-500 pl-3">
+          <ul className="space-y-1 text-stone-500 pl-3 list-disc list-inside">
             <li>「行きたい」「行った」を記録</li>
             <li>自分だけの自分メモを書く</li>
             <li>お店の追加・編集</li>
