@@ -1,12 +1,12 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
 import { fetchRestaurant, deleteRestaurant } from '@/lib/api'
 import { STATUS_CONFIG, TAG_CONFIG } from '@/utils/constants'
-import type { Restaurant } from '@/types'
+import type { Restaurant, RestaurantStatus } from '@/types'
 
 const MiniMap = dynamic(() => import('@/components/map/MiniMap'), { ssr: false })
 
@@ -17,6 +17,7 @@ export default function RestaurantDetailPage() {
   const [loading, setLoading] = useState(true)
   const [deleting, setDeleting] = useState(false)
   const [userEmail, setUserEmail] = useState<string | null>(null)
+  const [statusSaving, setStatusSaving] = useState(false)
 
   useEffect(() => {
     fetch('/api/auth/session')
@@ -31,6 +32,18 @@ export default function RestaurantDetailPage() {
       .catch(() => router.push('/'))
       .finally(() => setLoading(false))
   }, [id, router])
+
+  const handleStatusChange = useCallback(async (status: RestaurantStatus) => {
+    if (statusSaving) return
+    setStatusSaving(true)
+    await fetch(`/api/restaurants/${id}/status`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status }),
+    })
+    setRestaurant((prev) => prev ? { ...prev, user_status: status } : prev)
+    setStatusSaving(false)
+  }, [id, statusSaving])
 
   const handleDelete = async () => {
     if (!restaurant) return
@@ -49,7 +62,7 @@ export default function RestaurantDetailPage() {
   }
   if (!restaurant) return null
 
-  const statusConfig = STATUS_CONFIG[restaurant.status]
+  const statusConfig = restaurant.user_status ? STATUS_CONFIG[restaurant.user_status] : null
   const isOwner = !!(userEmail && restaurant.user_email === userEmail)
   const memoPublic = restaurant.memo_public ?? restaurant.comment
   const memoPrivate = restaurant.memo_private
@@ -90,15 +103,39 @@ export default function RestaurantDetailPage() {
         <div className="bg-white rounded-2xl p-5 shadow-sm border border-stone-100">
           <div className="flex items-start justify-between gap-3 mb-3">
             <h2 className="text-xl font-bold text-stone-800">{restaurant.name}</h2>
-            <div className="flex items-center gap-1.5 shrink-0">
-              {restaurant.has_storefront === false && (
-                <span className="text-xs font-medium text-stone-400 bg-stone-100 px-2.5 py-1 rounded-full">実店舗なし</span>
-              )}
+            {restaurant.has_storefront === false && (
+              <span className="text-xs font-medium text-stone-400 bg-stone-100 px-2.5 py-1 rounded-full shrink-0">実店舗なし</span>
+            )}
+          </div>
+
+          {userEmail ? (
+            <div className="flex gap-2 mb-3">
+              {(['want_to_visit', 'visited'] as RestaurantStatus[]).map((s) => {
+                const c = STATUS_CONFIG[s]
+                const active = restaurant.user_status === s
+                return (
+                  <button
+                    key={s}
+                    onClick={() => handleStatusChange(s)}
+                    disabled={statusSaving}
+                    className={`flex-1 py-2.5 rounded-xl text-sm font-bold border-2 transition-all ${
+                      active
+                        ? `${c.bgColor} ${c.textColor} border-transparent`
+                        : 'bg-white text-stone-400 border-stone-200 hover:border-stone-300'
+                    }`}
+                  >
+                    {s === 'want_to_visit' ? '🔖 行きたい' : '✅ 行った'}
+                  </button>
+                )
+              })}
+            </div>
+          ) : statusConfig ? (
+            <div className="mb-3">
               <span className={`text-xs font-medium px-3 py-1 rounded-full ${statusConfig.bgColor} ${statusConfig.textColor}`}>
                 {statusConfig.label}
               </span>
             </div>
-          </div>
+          ) : null}
 
           <p className="text-sm text-stone-500 flex items-start gap-1.5">
             <svg className="w-4 h-4 mt-0.5 shrink-0 text-stone-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

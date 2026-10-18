@@ -7,7 +7,16 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
   const session = await auth()
   const userEmail = session?.user?.email ?? null
 
-  const rows = await sql`SELECT * FROM restaurants WHERE id = ${id}`
+  const rows = userEmail
+    ? await sql`
+        SELECT r.*, urs.status as user_status
+        FROM restaurants r
+        LEFT JOIN user_restaurant_status urs
+          ON urs.restaurant_id = r.id AND urs.user_email = ${userEmail}
+        WHERE r.id = ${id}
+      `
+    : await sql`SELECT *, NULL as user_status FROM restaurants WHERE id = ${id}`
+
   if (!rows.length) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
   const r = rows[0] as Record<string, unknown>
@@ -50,6 +59,14 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     WHERE id = ${id}
     RETURNING *
   `
+  if (userEmail && body.status) {
+    await sql`
+      INSERT INTO user_restaurant_status (user_email, restaurant_id, status)
+      VALUES (${userEmail}, ${id}, ${body.status})
+      ON CONFLICT (user_email, restaurant_id) DO UPDATE SET status = ${body.status}, updated_at = now()
+    `
+  }
+
   return NextResponse.json(rows[0])
 }
 

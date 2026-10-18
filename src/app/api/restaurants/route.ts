@@ -6,7 +6,15 @@ export async function GET() {
   const session = await auth()
   const userEmail = session?.user?.email ?? null
 
-  const rows = await sql`SELECT * FROM restaurants ORDER BY created_at DESC`
+  const rows = userEmail
+    ? await sql`
+        SELECT r.*, urs.status as user_status
+        FROM restaurants r
+        LEFT JOIN user_restaurant_status urs
+          ON urs.restaurant_id = r.id AND urs.user_email = ${userEmail}
+        ORDER BY r.created_at DESC
+      `
+    : await sql`SELECT *, NULL as user_status FROM restaurants ORDER BY created_at DESC`
 
   const sanitized = rows.map((r: Record<string, unknown>) => ({
     ...r,
@@ -36,5 +44,13 @@ export async function POST(req: Request) {
        ${has_storefront ?? true}, ${status}, ${tags ?? []}, ${session_id}, ${userEmail})
     RETURNING *
   `
-  return NextResponse.json(rows[0], { status: 201 })
+  const newRestaurant = rows[0] as Record<string, unknown>
+  if (userEmail && status) {
+    await sql`
+      INSERT INTO user_restaurant_status (user_email, restaurant_id, status)
+      VALUES (${userEmail}, ${newRestaurant.id}, ${status})
+      ON CONFLICT (user_email, restaurant_id) DO UPDATE SET status = ${status}, updated_at = now()
+    `
+  }
+  return NextResponse.json({ ...newRestaurant, user_status: status ?? null }, { status: 201 })
 }

@@ -99,11 +99,13 @@ export default function MapView({ restaurants, onPinClick }: MapViewProps) {
       }
 
       restaurants.forEach((restaurant) => {
-        const config = STATUS_CONFIG[restaurant.status]
+        const pinColor = restaurant.user_status
+          ? STATUS_CONFIG[restaurant.user_status].color
+          : '#d6d3d1'
         const svgIcon = `
           <svg xmlns="http://www.w3.org/2000/svg" width="32" height="42" viewBox="0 0 32 42">
             <path d="M16 0C7.2 0 0 7.2 0 16c0 11 16 26 16 26S32 27 32 16C32 7.2 24.8 0 16 0z"
-              fill="${config.color}" stroke="white" stroke-width="2"/>
+              fill="${pinColor}" stroke="white" stroke-width="2"/>
             <circle cx="16" cy="16" r="7" fill="white" opacity="0.9"/>
           </svg>`
 
