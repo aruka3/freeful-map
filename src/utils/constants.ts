@@ -6,9 +6,9 @@ export const STATUS_CONFIG: Record<
 > = {
   want_to_visit: {
     label: '行ってみたい',
-    color: '#94a3b8',
-    bgColor: 'bg-slate-100',
-    textColor: 'text-slate-600',
+    color: '#f59e0b',
+    bgColor: 'bg-amber-100',
+    textColor: 'text-amber-700',
   },
   visited: {
     label: '行った',
