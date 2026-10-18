@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
@@ -32,6 +32,14 @@ export default function NewRestaurantPage() {
   const [showManual, setShowManual] = useState(false)
   const [error, setError] = useState('')
   const [duplicateWarning, setDuplicateWarning] = useState(false)
+  const [userEmail, setUserEmail] = useState<string | null>(null)
+
+  useEffect(() => {
+    fetch('/api/auth/session')
+      .then((r) => r.json())
+      .then((data) => setUserEmail(data?.user?.email ?? null))
+      .catch(() => setUserEmail(null))
+  }, [])
 
   const geocode = async () => {
     if (!address.trim()) return
@@ -336,18 +344,24 @@ export default function NewRestaurantPage() {
           </div>
 
           {/* 自分メモ */}
-          <div>
-            <FieldLabel>
-              自分メモ
-              <span className="text-stone-400 font-normal text-xs ml-2">任意・自分だけに表示</span>
-            </FieldLabel>
-            <Textarea
-              value={memoPrivate}
-              onChange={(e) => setMemoPrivate(e.target.value)}
-              rows={4}
-              placeholder="味濃いめ、また行きたい、雰囲気好き、個人的に好みだった…"
-            />
-          </div>
+          {userEmail ? (
+            <div>
+              <FieldLabel>
+                自分メモ
+                <span className="text-stone-400 font-normal text-xs ml-2">任意・自分だけに表示</span>
+              </FieldLabel>
+              <Textarea
+                value={memoPrivate}
+                onChange={(e) => setMemoPrivate(e.target.value)}
+                rows={4}
+                placeholder="味濃いめ、また行きたい、雰囲気好き、個人的に好みだった…"
+              />
+            </div>
+          ) : (
+            <div className="bg-stone-50 border border-stone-200 rounded-xl p-4 text-sm text-stone-500 text-center">
+              <a href="/login" className="text-emerald-600 hover:underline font-medium">ログイン</a>すると自分メモを書けます
+            </div>
+          )}
 
           <button
             type="submit"

@@ -66,21 +66,23 @@ export default function RestaurantDetailPage() {
             </Link>
             <h1 className="font-bold text-stone-800 truncate">{restaurant.name}</h1>
           </div>
-          <div className="flex gap-2 shrink-0">
-            <Link
-              href={`/restaurants/${id}/edit`}
-              className="text-xs font-medium text-emerald-600 hover:text-emerald-700 px-3 py-1.5 rounded-lg hover:bg-emerald-50 transition-colors"
-            >
-              編集
-            </Link>
-            <button
-              onClick={handleDelete}
-              disabled={deleting}
-              className="text-xs font-medium text-rose-500 hover:text-rose-600 px-3 py-1.5 rounded-lg hover:bg-rose-50 transition-colors"
-            >
-              {deleting ? '削除中…' : '削除'}
-            </button>
-          </div>
+          {userEmail && (
+            <div className="flex gap-2 shrink-0">
+              <Link
+                href={`/restaurants/${id}/edit`}
+                className="text-xs font-medium text-emerald-600 hover:text-emerald-700 px-3 py-1.5 rounded-lg hover:bg-emerald-50 transition-colors"
+              >
+                編集
+              </Link>
+              <button
+                onClick={handleDelete}
+                disabled={deleting}
+                className="text-xs font-medium text-rose-500 hover:text-rose-600 px-3 py-1.5 rounded-lg hover:bg-rose-50 transition-colors"
+              >
+                {deleting ? '削除中…' : '削除'}
+              </button>
+            </div>
+          )}
         </div>
       </header>
 
