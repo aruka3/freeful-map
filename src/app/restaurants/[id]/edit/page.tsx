@@ -29,6 +29,7 @@ export default function EditRestaurantPage() {
   const [sessionId, setSessionId] = useState('')
   const [geoLoading, setGeoLoading] = useState(false)
   const [geoMsg, setGeoMsg] = useState<{ type: 'ok' | 'error'; text: string } | null>(null)
+  const [saved, setSaved] = useState(false)
 
   useEffect(() => {
     fetchRestaurant(id)
@@ -91,7 +92,8 @@ export default function EditRestaurantPage() {
         tags,
         session_id: sessionId,
       })
-      router.push(`/restaurants/${id}`)
+      setSaved(true)
+      setTimeout(() => router.push(`/restaurants/${id}`), 800)
     } catch (err) {
       console.error(err)
       const msg = err instanceof Error ? err.message : String(err)
@@ -295,10 +297,14 @@ export default function EditRestaurantPage() {
 
           <button
             type="submit"
-            disabled={submitting}
-            className="w-full py-4 rounded-2xl bg-emerald-600 hover:bg-emerald-700 disabled:bg-stone-200 text-white text-sm font-bold transition-colors"
+            disabled={submitting || saved}
+            className={`w-full py-4 rounded-2xl text-white text-sm font-bold transition-colors ${
+              saved
+                ? 'bg-emerald-500'
+                : 'bg-emerald-600 hover:bg-emerald-700 disabled:bg-stone-200 disabled:text-stone-400'
+            }`}
           >
-            {submitting ? '保存中…' : '変更を保存'}
+            {saved ? '保存しました ✓' : submitting ? '保存中…' : '変更を保存'}
           </button>
         </div>
       </form>
