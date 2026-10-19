@@ -79,7 +79,7 @@ export default function RestaurantDetailPage() {
             </Link>
             <h1 className="font-bold text-stone-800 truncate">{restaurant.name}</h1>
           </div>
-          {userEmail && (
+          {isOwner && (
             <div className="flex gap-2 shrink-0">
               <Link
                 href={`/restaurants/${id}/edit`}

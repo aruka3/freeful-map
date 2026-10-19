@@ -32,8 +32,11 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   const userEmail = session?.user?.email ?? null
   const sessionId = req.headers.get('x-session-id') ?? ''
 
-  const existing = await sql`SELECT id FROM restaurants WHERE id = ${id}`
+  const existing = await sql`SELECT id, user_email FROM restaurants WHERE id = ${id}`
   if (!existing.length) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+  if (existing[0].user_email && existing[0].user_email !== userEmail) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
 
   const body = await req.json()
   const {
@@ -72,8 +75,15 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 
 export async function DELETE(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  const existing = await sql`SELECT id FROM restaurants WHERE id = ${id}`
+  const session = await auth()
+  const userEmail = session?.user?.email ?? null
+
+  const existing = await sql`SELECT id, user_email FROM restaurants WHERE id = ${id}`
   if (!existing.length) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+  if (existing[0].user_email && existing[0].user_email !== userEmail) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
+
   await sql`DELETE FROM restaurants WHERE id = ${id}`
   return new NextResponse(null, { status: 204 })
 }
