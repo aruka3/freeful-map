@@ -151,8 +151,21 @@ export default function HomePage() {
 
         {/* サイドバーリスト */}
         <div className={`${showList ? 'block' : 'hidden'} sm:block w-full sm:w-80 xl:w-96 bg-white border-l border-stone-100 overflow-y-auto shrink-0`}>
-          <div className="p-4 border-b border-stone-100 sticky top-0 bg-white z-10">
-            <p className="text-sm font-semibold text-stone-700">{filtered.length} 件のお店</p>
+          <div className="sticky top-0 bg-white z-10 border-b border-stone-100">
+            <Link
+              href="/chain-memos"
+              className="flex items-center gap-3 px-4 py-3 bg-emerald-50 hover:bg-emerald-100 border-b border-emerald-100 transition-colors"
+            >
+              <span className="text-lg">📝</span>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-bold text-emerald-800">困ったときメモ</p>
+                <p className="text-xs text-emerald-700/70">チェーン店の対応情報まとめ</p>
+              </div>
+              <svg className="w-4 h-4 text-emerald-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+              </svg>
+            </Link>
+            <p className="px-4 py-3 text-sm font-semibold text-stone-700">{filtered.length} 件のお店</p>
           </div>
           {filtered.length === 0 ? (
             <div className="p-8 text-center">

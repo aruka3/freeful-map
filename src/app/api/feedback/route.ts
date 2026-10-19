@@ -7,6 +7,7 @@ async function notifySlack(fb: {
   message: string
   pageUrl?: string | null
   imageUrls?: string[]
+  inboxUrl?: string
 }) {
   const webhookUrl = process.env.SLACK_WEBHOOK_URL
   if (!webhookUrl) return
@@ -16,7 +17,8 @@ async function notifySlack(fb: {
     const sender = `*${esc(fb.name ?? '（名前なし）')}*${fb.contact ? `（${esc(fb.contact)}）` : ''}`
     const quoted = esc(fb.message.slice(0, 2800)).replace(/^/gm, '> ')
     const footer = [
-      fb.pageUrl ? `送信元の画面：${esc(fb.pageUrl)}` : null,
+      fb.pageUrl ? `<${fb.pageUrl}|送信元の画面を開く>` : null,
+      fb.inboxUrl ? `<${fb.inboxUrl}|受信箱で対応する>` : null,
     ].filter(Boolean)
 
     const res = await fetch(webhookUrl, {
@@ -47,7 +49,13 @@ async function notifySlack(fb: {
 
 export async function POST(req: Request) {
   const body = await req.json()
-  const { name, contact, message, pageUrl } = body
+  const { name, contact, message } = body
+  let pageUrl: string | null = null
+  try {
+    const u = new URL(body.pageUrl)
+    if (u.pathname !== '/') pageUrl = u.href
+  } catch {}
+  const inboxUrl = `${new URL(req.url).origin}/admin/feedback`
 
   if (!name?.trim()) {
     return NextResponse.json({ error: 'お名前は必須です' }, { status: 400 })
@@ -61,11 +69,11 @@ export async function POST(req: Request) {
 
   const rows = await sql`
     INSERT INTO feedback (name, contact, message, page_url, image_urls)
-    VALUES (${name.trim()}, ${contact?.trim() || null}, ${message.trim()}, ${pageUrl || null}, ${JSON.stringify(imageUrls)}::jsonb)
+    VALUES (${name.trim()}, ${contact?.trim() || null}, ${message.trim()}, ${pageUrl}, ${JSON.stringify(imageUrls)}::jsonb)
     RETURNING id
   `
 
-  await notifySlack({ name: name.trim(), contact, message, pageUrl, imageUrls })
+  await notifySlack({ name: name.trim(), contact, message, pageUrl, imageUrls, inboxUrl })
 
   return NextResponse.json({ id: rows[0].id }, { status: 201 })
 }

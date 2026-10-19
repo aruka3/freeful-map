@@ -42,6 +42,7 @@ CREATE TABLE IF NOT EXISTS feedback (
   page_url TEXT,
   image_url TEXT,
   image_urls JSONB NOT NULL DEFAULT '[]'::jsonb,
+  resolved_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
