@@ -5,7 +5,7 @@ export const STATUS_CONFIG: Record<
   { label: string; color: string; bgColor: string; textColor: string }
 > = {
   want_to_visit: {
-    label: '行ってみたい',
+    label: '行きたい',
     color: '#f59e0b',
     bgColor: 'bg-amber-100',
     textColor: 'text-amber-700',

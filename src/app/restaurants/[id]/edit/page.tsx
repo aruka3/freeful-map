@@ -230,7 +230,7 @@ export default function EditRestaurantPage() {
             <FieldLabel>ステータス</FieldLabel>
             <div className="grid grid-cols-2 gap-3">
               {([
-                { value: 'want_to_visit', label: '行ってみたい', emoji: '🔖' },
+                { value: 'want_to_visit', label: '行きたい', emoji: '🔖' },
                 { value: 'visited', label: '行った', emoji: '✅' },
               ] as { value: RestaurantStatus; label: string; emoji: string }[]).map((opt) => (
                 <button
