@@ -16,6 +16,7 @@ export interface Restaurant {
   tags: string[]
   session_id: string
   user_email?: string | null
+  prefecture?: string | null
   user_status?: RestaurantStatus | null
 }
 

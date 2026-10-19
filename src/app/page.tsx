@@ -9,12 +9,24 @@ import RestaurantPopup from '@/components/map/RestaurantPopup'
 import HeaderMenu from '@/components/auth/HeaderMenu'
 import type { Restaurant, FilterState, RestaurantStatus } from '@/types'
 import { STATUS_CONFIG } from '@/utils/constants'
+import { PREFECTURES } from '@/lib/prefecture'
 
 const MapView = dynamic(() => import('@/components/map/MapView'), { ssr: false })
 
 const ALL_STATUSES: RestaurantStatus[] = ['want_to_visit', 'visited']
 
 const DEFAULT_FILTER: FilterState = { status: [...ALL_STATUSES] }
+
+const NO_AREA = '実店舗なし・オンライン'
+const COLLAPSED_KEY = 'freeful.collapsedAreas'
+
+function loadCollapsed(): string[] {
+  try {
+    return JSON.parse(localStorage.getItem(COLLAPSED_KEY) ?? '[]')
+  } catch {
+    return []
+  }
+}
 
 export default function HomePage() {
   const [restaurants, setRestaurants] = useState<Restaurant[]>([])
@@ -24,6 +36,14 @@ export default function HomePage() {
   const [selected, setSelected] = useState<Restaurant | null>(null)
   const [showList, setShowList] = useState(false)
   const [userEmail, setUserEmail] = useState<string | null>(null)
+  const [collapsed, setCollapsed] = useState<string[]>(() => (typeof window === 'undefined' ? [] : loadCollapsed()))
+
+  const saveCollapsed = useCallback((next: string[]) => {
+    setCollapsed(next)
+    try {
+      localStorage.setItem(COLLAPSED_KEY, JSON.stringify(next))
+    } catch {}
+  }, [])
 
   useEffect(() => {
     fetch('/api/auth/session')
@@ -62,7 +82,36 @@ export default function HomePage() {
     [filtered]
   )
 
-  const handlePinClick = useCallback((r: Restaurant) => setSelected(r), [])
+  const groups = useMemo(() => {
+    const map = new Map<string, Restaurant[]>()
+    for (const r of filtered) {
+      const key = r.prefecture ?? NO_AREA
+      map.set(key, [...(map.get(key) ?? []), r])
+    }
+    const order = (k: string) => (k === NO_AREA ? 999 : PREFECTURES.indexOf(k))
+    return [...map.entries()].sort((a, b) => order(a[0]) - order(b[0]))
+  }, [filtered])
+
+  const handlePinClick = useCallback((r: Restaurant) => {
+    setSelected(r)
+    const key = r.prefecture ?? NO_AREA
+    setCollapsed((prev) => {
+      if (!prev.includes(key)) return prev
+      const next = prev.filter((k) => k !== key)
+      try {
+        localStorage.setItem(COLLAPSED_KEY, JSON.stringify(next))
+      } catch {}
+      return next
+    })
+  }, [])
+
+  useEffect(() => {
+    if (!selected) return
+    const id = requestAnimationFrame(() => {
+      document.getElementById(`list-${selected.id}`)?.scrollIntoView({ block: 'center', behavior: 'smooth' })
+    })
+    return () => cancelAnimationFrame(id)
+  }, [selected, showList, collapsed])
 
   return (
     <div className="h-screen flex flex-col bg-stone-50">
@@ -175,34 +224,67 @@ export default function HomePage() {
               </Link>
             </div>
           ) : (
-            <div className="divide-y divide-stone-50">
-              {filtered.map((r) => {
-                const dotColor = r.user_status ? STATUS_CONFIG[r.user_status].color : '#d6d3d1'
+            <div>
+              {groups.map(([area, items]) => {
+                const isOpen = !collapsed.includes(area)
                 return (
-                  <Link
-                    key={r.id}
-                    href={`/restaurants/${r.id}`}
-                    className={`block w-full text-left p-4 transition-colors ${r.has_storefront === false ? 'bg-amber-50 hover:bg-amber-100' : 'hover:bg-stone-50'}`}
-                  >
-                    <div className="flex items-start gap-3">
-                      <div className="w-3 h-3 rounded-full mt-1.5 shrink-0" style={{ backgroundColor: dotColor }} />
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-1.5">
-                          <p className="text-sm font-semibold text-stone-800 truncate">{r.name}</p>
-                          {r.has_storefront === false && (
-                            <span className="shrink-0 text-[10px] font-medium text-stone-400 bg-stone-100 px-1.5 py-0.5 rounded-full">実店舗なし</span>
-                          )}
-                        </div>
-                        <p className="text-xs text-stone-400 truncate mt-0.5">{r.address}</p>
-                        {(r.memo_public ?? r.comment) && (
-                          <p className="text-xs text-stone-500 mt-1 line-clamp-1">{r.memo_public ?? r.comment}</p>
-                        )}
-                      </div>
-                      <svg className="w-4 h-4 text-stone-300 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                  <section key={area}>
+                    <button
+                      type="button"
+                      onClick={() => saveCollapsed(isOpen ? [...collapsed, area] : collapsed.filter((k) => k !== area))}
+                      className="w-full flex items-center justify-between px-4 py-2.5 bg-stone-50 border-b border-stone-100 text-left"
+                    >
+                      <span className="text-sm font-bold text-stone-700">
+                        {area}
+                        <span className="ml-1.5 text-xs font-normal text-stone-400">{items.length}</span>
+                      </span>
+                      <svg
+                        className={`w-4 h-4 text-stone-400 transition-transform ${isOpen ? 'rotate-180' : ''}`}
+                        fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
                       </svg>
-                    </div>
-                  </Link>
+                    </button>
+                    {isOpen && (
+                      <div className="divide-y divide-stone-50">
+                        {items.map((r) => {
+                          const dotColor = r.user_status ? STATUS_CONFIG[r.user_status].color : '#d6d3d1'
+                          const isSelected = selected?.id === r.id
+                          return (
+                            <Link
+                              key={r.id}
+                              id={`list-${r.id}`}
+                              href={`/restaurants/${r.id}`}
+                              className={`block w-full text-left p-4 transition-colors ${
+                                isSelected
+                                  ? 'bg-emerald-50 shadow-[inset_3px_0_0_#10b981]'
+                                  : r.has_storefront === false ? 'bg-amber-50 hover:bg-amber-100' : 'hover:bg-stone-50'
+                              }`}
+                            >
+                              <div className="flex items-start gap-3">
+                                <div className="w-3 h-3 rounded-full mt-1.5 shrink-0" style={{ backgroundColor: dotColor }} />
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center gap-1.5">
+                                    <p className="text-sm font-semibold text-stone-800 truncate">{r.name}</p>
+                                    {r.has_storefront === false && (
+                                      <span className="shrink-0 text-[10px] font-medium text-stone-400 bg-stone-100 px-1.5 py-0.5 rounded-full">実店舗なし</span>
+                                    )}
+                                  </div>
+                                  <p className="text-xs text-stone-400 truncate mt-0.5">{r.address}</p>
+                                  {(r.memo_public ?? r.comment) && (
+                                    <p className="text-xs text-stone-500 mt-1 line-clamp-1">{r.memo_public ?? r.comment}</p>
+                                  )}
+                                </div>
+                                <svg className="w-4 h-4 text-stone-300 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                                </svg>
+                              </div>
+                            </Link>
+                          )
+                        })}
+                      </div>
+                    )}
+                  </section>
                 )
               })}
             </div>

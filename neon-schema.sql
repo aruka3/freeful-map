@@ -52,3 +52,6 @@ CREATE TABLE IF NOT EXISTS admins (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 INSERT INTO admins (email) VALUES ('sora.ao.ichi.11263182@gmail.com') ON CONFLICT DO NOTHING;
+
+-- 都道府県（住所、なければ緯度経度から判定）
+ALTER TABLE restaurants ADD COLUMN IF NOT EXISTS prefecture TEXT;

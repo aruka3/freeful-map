@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { sql } from '@/lib/db'
+import { resolvePrefecture } from '@/lib/prefecture'
 import { auth } from '@/auth'
 
 export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -43,6 +44,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     name, address, lat, lng, comment, memo_public, memo_private,
     has_storefront, status, tags,
   } = body
+  const prefecture = await resolvePrefecture(address, lat, lng, has_storefront ?? true)
 
   const rows = await sql`
     UPDATE restaurants SET
@@ -56,6 +58,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       has_storefront = ${has_storefront ?? true},
       status = ${status},
       tags = ${tags ?? []},
+      prefecture = ${prefecture},
       session_id = ${sessionId || body.session_id || ''},
       user_email = COALESCE(${userEmail}, user_email),
       updated_at = NOW()

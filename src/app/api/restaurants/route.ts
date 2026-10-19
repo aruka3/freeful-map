@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { sql } from '@/lib/db'
+import { resolvePrefecture } from '@/lib/prefecture'
 import { auth } from '@/auth'
 
 export async function GET() {
@@ -33,15 +34,16 @@ export async function POST(req: Request) {
   } = body
 
   const userEmail = session?.user?.email ?? null
+  const prefecture = await resolvePrefecture(address, lat, lng, has_storefront ?? true)
 
   const rows = await sql`
     INSERT INTO restaurants
       (name, address, lat, lng, comment, memo_public, memo_private,
-       has_storefront, status, tags, session_id, user_email)
+       has_storefront, status, tags, session_id, user_email, prefecture)
     VALUES
       (${name}, ${address}, ${lat}, ${lng}, ${comment ?? null},
        ${memo_public ?? null}, ${memo_private ?? null},
-       ${has_storefront ?? true}, ${status}, ${tags ?? []}, ${session_id}, ${userEmail})
+       ${has_storefront ?? true}, ${status}, ${tags ?? []}, ${session_id}, ${userEmail}, ${prefecture})
     RETURNING *
   `
   const newRestaurant = rows[0] as Record<string, unknown>
