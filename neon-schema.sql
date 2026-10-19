@@ -32,3 +32,22 @@ CREATE TABLE IF NOT EXISTS chain_memos (
   memo TEXT,
   session_id TEXT NOT NULL
 );
+
+
+CREATE TABLE IF NOT EXISTS feedback (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name TEXT,
+  contact TEXT,
+  message TEXT NOT NULL,
+  page_url TEXT,
+  image_url TEXT,
+  image_urls JSONB NOT NULL DEFAULT '[]'::jsonb,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- 管理者はこのテーブルのメールアドレスで管理する
+CREATE TABLE IF NOT EXISTS admins (
+  email TEXT PRIMARY KEY,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+INSERT INTO admins (email) VALUES ('sora.ao.ichi.11263182@gmail.com') ON CONFLICT DO NOTHING;

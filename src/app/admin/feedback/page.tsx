@@ -25,7 +25,7 @@ function imagesOf(r: Feedback) {
 export default async function AdminFeedbackPage() {
   const session = await auth()
   if (!session?.user?.email) redirect('/login')
-  if (!isAdminEmail(session.user.email)) redirect('/')
+  if (!(await isAdminEmail(session.user.email))) redirect('/')
 
   const rows = (await sql`
     SELECT id, name, contact, message, page_url, image_url, image_urls, created_at
