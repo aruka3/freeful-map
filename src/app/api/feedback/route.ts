@@ -56,8 +56,8 @@ export async function POST(req: Request) {
   }
 
   const rows = await sql`
-    INSERT INTO feedback (name, contact, message, page_url)
-    VALUES (${name?.trim() || null}, ${contact?.trim() || null}, ${message.trim()}, ${pageUrl || null})
+    INSERT INTO feedback (name, contact, message, page_url, image_url)
+    VALUES (${name?.trim() || null}, ${contact?.trim() || null}, ${message.trim()}, ${pageUrl || null}, ${imageUrl || null})
     RETURNING id
   `
 

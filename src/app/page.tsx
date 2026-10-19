@@ -24,12 +24,17 @@ export default function HomePage() {
   const [selected, setSelected] = useState<Restaurant | null>(null)
   const [showList, setShowList] = useState(false)
   const [userEmail, setUserEmail] = useState<string | null>(null)
+  const [isAdmin, setIsAdmin] = useState(false)
 
   useEffect(() => {
     fetch('/api/auth/session')
       .then((r) => r.json())
       .then((data) => setUserEmail(data?.user?.email ?? null))
       .catch(() => setUserEmail(null))
+    fetch('/api/admin/me')
+      .then((r) => r.json())
+      .then((d) => setIsAdmin(!!d.isAdmin))
+      .catch(() => setIsAdmin(false))
   }, [])
 
   useEffect(() => {
@@ -89,6 +94,15 @@ export default function HomePage() {
             >
               📝
             </Link>
+            {isAdmin && (
+              <Link
+                href="/admin/feedback"
+                className="text-xs text-stone-500 hover:text-stone-700 px-3 py-1.5 rounded-lg hover:bg-stone-100 transition-colors"
+                title="フィードバック受信箱"
+              >
+                📥
+              </Link>
+            )}
             <Link
               href="/feedback"
               className="sm:hidden text-xs text-stone-500 hover:text-stone-700 px-3 py-1.5 rounded-lg hover:bg-stone-100 transition-colors"
