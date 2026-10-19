@@ -13,7 +13,13 @@ type Feedback = {
   message: string
   page_url: string | null
   image_url: string | null
+  image_urls: string[] | null
   created_at: string
+}
+
+function imagesOf(r: Feedback) {
+  if (r.image_urls?.length) return r.image_urls
+  return r.image_url ? [r.image_url] : []
 }
 
 export default async function AdminFeedbackPage() {
@@ -22,7 +28,7 @@ export default async function AdminFeedbackPage() {
   if (!isAdminEmail(session.user.email)) redirect('/')
 
   const rows = (await sql`
-    SELECT id, name, contact, message, page_url, image_url, created_at
+    SELECT id, name, contact, message, page_url, image_url, image_urls, created_at
     FROM feedback ORDER BY created_at DESC LIMIT 200
   `) as Feedback[]
 
@@ -56,11 +62,15 @@ export default async function AdminFeedbackPage() {
                 </time>
               </div>
               <p className="text-sm text-stone-700 whitespace-pre-wrap break-words">{r.message}</p>
-              {r.image_url && (
-                <a href={r.image_url} target="_blank" rel="noreferrer">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={r.image_url} alt="添付画像" className="w-full max-h-64 object-contain rounded-xl border border-stone-200" />
-                </a>
+              {imagesOf(r).length > 0 && (
+                <div className="grid grid-cols-2 gap-2">
+                  {imagesOf(r).map((url) => (
+                    <a key={url} href={url} target="_blank" rel="noreferrer">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={url} alt="添付画像" className="w-full h-40 object-cover rounded-xl border border-stone-200" />
+                    </a>
+                  ))}
+                </div>
               )}
               {r.page_url && <p className="text-xs text-stone-400 break-all">送信元：{r.page_url}</p>}
             </div>

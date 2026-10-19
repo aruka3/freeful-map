@@ -1,12 +1,12 @@
 'use client'
 
-import { useEffect, useState, useCallback, useMemo, useRef } from 'react'
+import { useEffect, useState, useCallback, useMemo } from 'react'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { fetchRestaurants } from '@/lib/api'
 import FilterPanel from '@/components/map/FilterPanel'
 import RestaurantPopup from '@/components/map/RestaurantPopup'
-import AuthButton from '@/components/auth/AuthButton'
+import HeaderMenu from '@/components/auth/HeaderMenu'
 import type { Restaurant, FilterState, RestaurantStatus } from '@/types'
 import { STATUS_CONFIG } from '@/utils/constants'
 
@@ -24,17 +24,12 @@ export default function HomePage() {
   const [selected, setSelected] = useState<Restaurant | null>(null)
   const [showList, setShowList] = useState(false)
   const [userEmail, setUserEmail] = useState<string | null>(null)
-  const [isAdmin, setIsAdmin] = useState(false)
 
   useEffect(() => {
     fetch('/api/auth/session')
       .then((r) => r.json())
       .then((data) => setUserEmail(data?.user?.email ?? null))
       .catch(() => setUserEmail(null))
-    fetch('/api/admin/me')
-      .then((r) => r.json())
-      .then((d) => setIsAdmin(!!d.isAdmin))
-      .catch(() => setIsAdmin(false))
   }, [])
 
   useEffect(() => {
@@ -71,59 +66,26 @@ export default function HomePage() {
 
   return (
     <div className="h-screen flex flex-col bg-stone-50">
-      <header className="bg-white border-b border-stone-100 z-10 shrink-0">
-        <div className="max-w-screen-lg mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-2">
+      <header className="relative z-[1100] bg-white border-b border-stone-100 shrink-0">
+        <div className="max-w-screen-lg mx-auto px-4 py-2.5 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 min-w-0">
             <span className="text-emerald-600 text-xl">🌿</span>
-            <h1 className="font-bold text-stone-800 text-base">Freeful Map</h1>
+            <h1 className="font-bold text-stone-800 text-base whitespace-nowrap">Freeful Map</h1>
             <span className="hidden sm:block text-xs text-stone-400 ml-1">
               安心して食べられるお店を記録する地図
             </span>
           </div>
-          <div className="flex items-center gap-2">
-            <AuthButton />
+          <div className="flex items-center gap-1.5 shrink-0">
             <button
               onClick={() => setShowList(!showList)}
-              className="sm:hidden text-xs text-stone-500 hover:text-stone-700 px-3 py-1.5 rounded-lg hover:bg-stone-100 transition-colors"
+              className="sm:hidden text-xs font-medium text-stone-600 whitespace-nowrap px-3 py-2 rounded-full hover:bg-stone-100 transition-colors"
             >
               {showList ? '地図' : 'リスト'}
             </button>
-            <Link
-              href="/chain-memos"
-              className="sm:hidden text-xs text-stone-500 hover:text-stone-700 px-3 py-1.5 rounded-lg hover:bg-stone-100 transition-colors"
-            >
-              📝
-            </Link>
-            {isAdmin && (
-              <Link
-                href="/admin/feedback"
-                className="text-xs text-stone-500 hover:text-stone-700 px-3 py-1.5 rounded-lg hover:bg-stone-100 transition-colors"
-                title="フィードバック受信箱"
-              >
-                📥
-              </Link>
-            )}
-            <Link
-              href="/feedback"
-              className="sm:hidden text-xs text-stone-500 hover:text-stone-700 px-3 py-1.5 rounded-lg hover:bg-stone-100 transition-colors"
-            >
-              💬
-            </Link>
-            <Link
-              href="/chain-memos"
-              className="text-xs text-stone-500 hover:text-stone-700 px-3 py-1.5 rounded-lg hover:bg-stone-100 transition-colors font-medium hidden sm:block"
-            >
-              📝 困ったときメモ
-            </Link>
-            <Link
-              href="/feedback"
-              className="text-xs text-stone-500 hover:text-stone-700 px-3 py-1.5 rounded-lg hover:bg-stone-100 transition-colors font-medium hidden sm:block"
-            >
-              フィードバック
-            </Link>
+            <HeaderMenu />
             <Link
               href="/restaurants/new"
-              className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2 rounded-full transition-colors shadow-sm"
+              className="flex items-center gap-1.5 whitespace-nowrap bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2 rounded-full transition-colors shadow-sm"
             >
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />

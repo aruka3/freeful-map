@@ -6,7 +6,7 @@ async function notifySlack(fb: {
   contact?: string | null
   message: string
   pageUrl?: string | null
-  imageUrl?: string | null
+  imageUrls?: string[]
 }) {
   const webhookUrl = process.env.SLACK_WEBHOOK_URL
   if (!webhookUrl) return
@@ -32,9 +32,7 @@ async function notifySlack(fb: {
               text: `${sender} さんからフィードバックが届きました\n${quoted}`,
             },
           },
-          ...(fb.imageUrl
-            ? [{ type: 'image', image_url: fb.imageUrl, alt_text: '添付画像' }]
-            : []),
+          ...(fb.imageUrls ?? []).map((url) => ({ type: 'image', image_url: url, alt_text: '添付画像' })),
           ...(footer.length
             ? [{ type: 'context', elements: [{ type: 'mrkdwn', text: footer.join('　') }] }]
             : []),
@@ -49,19 +47,25 @@ async function notifySlack(fb: {
 
 export async function POST(req: Request) {
   const body = await req.json()
-  const { name, contact, message, pageUrl, imageUrl } = body
+  const { name, contact, message, pageUrl } = body
 
+  if (!name?.trim()) {
+    return NextResponse.json({ error: 'お名前は必須です' }, { status: 400 })
+  }
   if (!message?.trim()) {
     return NextResponse.json({ error: 'メッセージは必須です' }, { status: 400 })
   }
+  const imageUrls: string[] = (Array.isArray(body.imageUrls) ? body.imageUrls : [])
+    .filter((u: unknown): u is string => typeof u === 'string' && u.startsWith('https://'))
+    .slice(0, 5)
 
   const rows = await sql`
-    INSERT INTO feedback (name, contact, message, page_url, image_url)
-    VALUES (${name?.trim() || null}, ${contact?.trim() || null}, ${message.trim()}, ${pageUrl || null}, ${imageUrl || null})
+    INSERT INTO feedback (name, contact, message, page_url, image_urls)
+    VALUES (${name.trim()}, ${contact?.trim() || null}, ${message.trim()}, ${pageUrl || null}, ${JSON.stringify(imageUrls)}::jsonb)
     RETURNING id
   `
 
-  await notifySlack({ name, contact, message, pageUrl, imageUrl })
+  await notifySlack({ name: name.trim(), contact, message, pageUrl, imageUrls })
 
   return NextResponse.json({ id: rows[0].id }, { status: 201 })
 }

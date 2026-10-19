@@ -3,44 +3,51 @@
 import { useState, useRef } from 'react'
 import Link from 'next/link'
 
+const MAX_IMAGES = 5
+
 export default function FeedbackPage() {
   const [name, setName] = useState('')
   const [contact, setContact] = useState('')
   const [message, setMessage] = useState('')
-  const [imageFile, setImageFile] = useState<File | null>(null)
-  const [imagePreview, setImagePreview] = useState<string | null>(null)
+  const [images, setImages] = useState<{ file: File; preview: string }[]>([])
   const [submitting, setSubmitting] = useState(false)
   const [done, setDone] = useState(false)
   const [error, setError] = useState('')
   const fileRef = useRef<HTMLInputElement>(null)
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0] ?? null
-    setImageFile(file)
-    if (file) {
-      const reader = new FileReader()
-      reader.onload = (ev) => setImagePreview(ev.target?.result as string)
-      reader.readAsDataURL(file)
-    } else {
-      setImagePreview(null)
-    }
+  const handleImagesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const picked = Array.from(e.target.files ?? [])
+    const room = MAX_IMAGES - images.length
+    const added = picked.slice(0, room).map((file) => ({ file, preview: URL.createObjectURL(file) }))
+    setImages([...images, ...added])
+    if (picked.length > room) setError(`画像は${MAX_IMAGES}枚までです。`)
+    else setError('')
+    if (fileRef.current) fileRef.current.value = ''
+  }
+
+  const removeImage = (i: number) => {
+    URL.revokeObjectURL(images[i].preview)
+    setImages(images.filter((_, idx) => idx !== i))
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!message.trim()) return
+    if (!name.trim() || !message.trim()) return
     setSubmitting(true)
     setError('')
     try {
-      let imageUrl: string | null = null
-      if (imageFile) {
+      const imageUrls: string[] = []
+      for (const { file } of images) {
         const fd = new FormData()
-        fd.append('file', imageFile)
-        const uploadRes = await fetch('/api/feedback/upload', { method: 'POST', body: fd })
-        if (uploadRes.ok) {
-          const data = await uploadRes.json()
-          imageUrl = data.url ?? null
+        fd.append('file', file)
+        const up = await fetch('/api/feedback/upload', { method: 'POST', body: fd })
+        if (!up.ok) {
+          const data = await up.json().catch(() => ({}))
+          setError(`画像のアップロードに失敗しました。${data.error ?? ''}`)
+          setSubmitting(false)
+          return
         }
+        imageUrls.push((await up.json()).url)
       }
 
       const res = await fetch('/api/feedback', {
@@ -50,8 +57,8 @@ export default function FeedbackPage() {
           name,
           contact,
           message,
-          imageUrl,
-          pageUrl: typeof window !== 'undefined' ? document.referrer || window.location.href : null,
+          imageUrls,
+          pageUrl: document.referrer || window.location.href,
         }),
       })
       if (!res.ok) throw new Error()
@@ -100,13 +107,14 @@ export default function FeedbackPage() {
             <div>
               <label className="block text-sm font-semibold text-stone-700 mb-1.5">
                 お名前
-                <span className="text-stone-400 font-normal text-xs ml-2">任意</span>
+                <span className="text-rose-400 ml-1">*</span>
               </label>
               <input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="例: はるか"
+                required
                 className="w-full rounded-xl border border-stone-200 bg-white px-4 py-3 text-sm text-stone-800 placeholder-stone-300 focus:outline-none focus:ring-2 focus:ring-emerald-400"
               />
             </div>
@@ -143,38 +151,44 @@ export default function FeedbackPage() {
             <div>
               <label className="block text-sm font-semibold text-stone-700 mb-1.5">
                 画像
-                <span className="text-stone-400 font-normal text-xs ml-2">任意</span>
+                <span className="text-stone-400 font-normal text-xs ml-2">任意・最大{MAX_IMAGES}枚</span>
               </label>
               <input
                 ref={fileRef}
                 type="file"
                 accept="image/*"
-                onChange={handleImageChange}
+                multiple
+                onChange={handleImagesChange}
                 className="hidden"
               />
-              {imagePreview ? (
-                <div className="relative inline-block">
-                  <img src={imagePreview} alt="preview" className="w-full max-h-48 object-contain rounded-xl border border-stone-200" />
+              <div className="grid grid-cols-3 gap-2">
+                {images.map((img, i) => (
+                  <div key={img.preview} className="relative aspect-square">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={img.preview} alt="" className="w-full h-full object-cover rounded-xl border border-stone-200" />
+                    <button
+                      type="button"
+                      onClick={() => removeImage(i)}
+                      aria-label="画像を削除"
+                      className="absolute top-1 right-1 bg-black/60 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs"
+                    >✕</button>
+                  </div>
+                ))}
+                {images.length < MAX_IMAGES && (
                   <button
                     type="button"
-                    onClick={() => { setImageFile(null); setImagePreview(null); if (fileRef.current) fileRef.current.value = '' }}
-                    className="absolute top-2 right-2 bg-black/50 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs"
-                  >✕</button>
-                </div>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => fileRef.current?.click()}
-                  className="w-full py-8 rounded-xl border-2 border-dashed border-stone-200 text-stone-400 text-sm hover:border-stone-300 hover:text-stone-500 transition-colors"
-                >
-                  📎 タップして画像を選択
-                </button>
-              )}
+                    onClick={() => fileRef.current?.click()}
+                    className="aspect-square rounded-xl border-2 border-dashed border-stone-200 text-stone-400 hover:border-stone-300 hover:text-stone-500 transition-colors flex flex-col items-center justify-center gap-1 text-xs"
+                  >
+                    <span className="text-xl">＋</span>画像を追加
+                  </button>
+                )}
+              </div>
             </div>
 
             <button
               type="submit"
-              disabled={submitting || !message.trim()}
+              disabled={submitting || !name.trim() || !message.trim()}
               className="w-full py-4 rounded-2xl bg-emerald-600 hover:bg-emerald-700 disabled:bg-stone-200 disabled:text-stone-400 text-white text-sm font-bold transition-colors"
             >
               {submitting ? '送信中…' : '送信する'}
