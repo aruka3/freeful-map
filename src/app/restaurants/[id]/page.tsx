@@ -171,7 +171,7 @@ export default function RestaurantDetailPage() {
             <div className="flex gap-1.5 mt-3 flex-wrap">
               {restaurant.tags.map((tag) => (
                 <span key={tag} className="text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-700">
-                  {TAG_CONFIG[tag]?.label ?? tag}
+                  {TAG_CONFIG[tag]?.short ?? tag}
                 </span>
               ))}
             </div>

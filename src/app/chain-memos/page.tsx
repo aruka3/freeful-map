@@ -130,7 +130,7 @@ function DeleteButton({ memoId, sessionId, onDeleted }: { memoId: string; sessio
     if (!confirm('このメモを削除しますか？')) return
     setDeleting(true)
     try {
-      const { deleteChainMemo } = await import('@/lib/supabase')
+      const { deleteChainMemo } = await import('@/lib/api')
       await deleteChainMemo(memoId, sessionId)
       onDeleted()
     } catch {

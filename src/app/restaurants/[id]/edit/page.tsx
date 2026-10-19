@@ -276,7 +276,7 @@ export default function EditRestaurantPage() {
                 )
               })}
             </div>
-            <p className="text-xs text-stone-400 mt-1.5">GF: グルテンフリー　CF: カゼインフリー　SF: 白砂糖フリー</p>
+            <p className="text-xs text-stone-400 mt-1.5">GF: グルテンフリー　CF: カゼインフリー　SF: シュガーフリー</p>
           </div>
 
           <div>
