@@ -262,12 +262,18 @@ export default function NewRestaurantPage() {
                   onClick={() => setHasStorefront(opt.value)}
                   className={`flex items-center gap-3 p-4 rounded-2xl border-2 transition-all ${
                     hasStorefront === opt.value
-                      ? 'border-emerald-400 bg-emerald-50'
+                      ? opt.value
+                        ? 'border-emerald-400 bg-emerald-50'
+                        : 'border-stone-400 bg-stone-100'
                       : 'border-stone-200 bg-white hover:border-stone-300'
                   }`}
                 >
                   <span className="text-2xl">{opt.emoji}</span>
-                  <span className={`text-sm font-semibold ${hasStorefront === opt.value ? 'text-emerald-700' : 'text-stone-600'}`}>
+                  <span className={`text-sm font-semibold ${
+                    hasStorefront === opt.value
+                      ? opt.value ? 'text-emerald-700' : 'text-stone-700'
+                      : 'text-stone-600'
+                  }`}>
                     {opt.label}
                   </span>
                 </button>
@@ -290,12 +296,18 @@ export default function NewRestaurantPage() {
                   onClick={() => setStatus(opt.value)}
                   className={`flex items-center gap-3 p-4 rounded-2xl border-2 transition-all ${
                     status === opt.value
-                      ? 'border-emerald-400 bg-emerald-50'
+                      ? opt.value === 'want_to_visit'
+                        ? 'border-amber-400 bg-amber-50'
+                        : 'border-emerald-400 bg-emerald-50'
                       : 'border-stone-200 bg-white hover:border-stone-300'
                   }`}
                 >
                   <span className="text-2xl">{opt.emoji}</span>
-                  <span className={`text-sm font-semibold ${status === opt.value ? 'text-emerald-700' : 'text-stone-600'}`}>
+                  <span className={`text-sm font-semibold ${
+                    status === opt.value
+                      ? opt.value === 'want_to_visit' ? 'text-amber-700' : 'text-emerald-700'
+                      : 'text-stone-600'
+                  }`}>
                     {opt.label}
                   </span>
                 </button>
