@@ -6,6 +6,7 @@ async function notifySlack(fb: {
   contact?: string | null
   message: string
   pageUrl?: string | null
+  imageUrl?: string | null
 }) {
   const webhookUrl = process.env.SLACK_WEBHOOK_URL
   if (!webhookUrl) return
@@ -31,6 +32,9 @@ async function notifySlack(fb: {
               text: `${sender} さんからフィードバックが届きました\n${quoted}`,
             },
           },
+          ...(fb.imageUrl
+            ? [{ type: 'image', image_url: fb.imageUrl, alt_text: '添付画像' }]
+            : []),
           ...(footer.length
             ? [{ type: 'context', elements: [{ type: 'mrkdwn', text: footer.join('　') }] }]
             : []),
@@ -45,7 +49,7 @@ async function notifySlack(fb: {
 
 export async function POST(req: Request) {
   const body = await req.json()
-  const { name, contact, message, pageUrl } = body
+  const { name, contact, message, pageUrl, imageUrl } = body
 
   if (!message?.trim()) {
     return NextResponse.json({ error: 'メッセージは必須です' }, { status: 400 })
@@ -57,7 +61,7 @@ export async function POST(req: Request) {
     RETURNING id
   `
 
-  await notifySlack({ name, contact, message, pageUrl })
+  await notifySlack({ name, contact, message, pageUrl, imageUrl })
 
   return NextResponse.json({ id: rows[0].id }, { status: 201 })
 }

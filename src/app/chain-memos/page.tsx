@@ -58,6 +58,12 @@ export default function ChainMemosPage() {
               <p className="text-xs text-stone-400">チェーン店の対応情報まとめ</p>
             </div>
           </div>
+          <div className="flex items-center gap-2">
+          <Link
+            href="/feedback"
+            className="text-xs text-stone-500 hover:text-stone-700 px-2 py-1.5 rounded-lg hover:bg-stone-100 transition-colors"
+            title="フィードバック"
+          >💬</Link>
           <Link
             href="/chain-memos/new"
             className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2 rounded-full transition-colors"
@@ -67,6 +73,7 @@ export default function ChainMemosPage() {
             </svg>
             追加
           </Link>
+          </div>
         </div>
       </header>
 

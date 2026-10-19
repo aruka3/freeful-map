@@ -90,6 +90,12 @@ export default function HomePage() {
               📝
             </Link>
             <Link
+              href="/feedback"
+              className="sm:hidden text-xs text-stone-500 hover:text-stone-700 px-3 py-1.5 rounded-lg hover:bg-stone-100 transition-colors"
+            >
+              💬
+            </Link>
+            <Link
               href="/chain-memos"
               className="text-xs text-stone-500 hover:text-stone-700 px-3 py-1.5 rounded-lg hover:bg-stone-100 transition-colors font-medium hidden sm:block"
             >

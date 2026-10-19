@@ -1,15 +1,30 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import Link from 'next/link'
 
 export default function FeedbackPage() {
   const [name, setName] = useState('')
   const [contact, setContact] = useState('')
   const [message, setMessage] = useState('')
+  const [imageFile, setImageFile] = useState<File | null>(null)
+  const [imagePreview, setImagePreview] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [done, setDone] = useState(false)
   const [error, setError] = useState('')
+  const fileRef = useRef<HTMLInputElement>(null)
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] ?? null
+    setImageFile(file)
+    if (file) {
+      const reader = new FileReader()
+      reader.onload = (ev) => setImagePreview(ev.target?.result as string)
+      reader.readAsDataURL(file)
+    } else {
+      setImagePreview(null)
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -17,6 +32,17 @@ export default function FeedbackPage() {
     setSubmitting(true)
     setError('')
     try {
+      let imageUrl: string | null = null
+      if (imageFile) {
+        const fd = new FormData()
+        fd.append('file', imageFile)
+        const uploadRes = await fetch('/api/feedback/upload', { method: 'POST', body: fd })
+        if (uploadRes.ok) {
+          const data = await uploadRes.json()
+          imageUrl = data.url ?? null
+        }
+      }
+
       const res = await fetch('/api/feedback', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -24,6 +50,7 @@ export default function FeedbackPage() {
           name,
           contact,
           message,
+          imageUrl,
           pageUrl: typeof window !== 'undefined' ? document.referrer || window.location.href : null,
         }),
       })
@@ -111,6 +138,38 @@ export default function FeedbackPage() {
                 className="w-full rounded-xl border border-stone-200 bg-white px-4 py-3 text-sm text-stone-800 placeholder-stone-300 focus:outline-none focus:ring-2 focus:ring-emerald-400 resize-none"
                 required
               />
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-stone-700 mb-1.5">
+                画像
+                <span className="text-stone-400 font-normal text-xs ml-2">任意</span>
+              </label>
+              <input
+                ref={fileRef}
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
+                className="hidden"
+              />
+              {imagePreview ? (
+                <div className="relative inline-block">
+                  <img src={imagePreview} alt="preview" className="w-full max-h-48 object-contain rounded-xl border border-stone-200" />
+                  <button
+                    type="button"
+                    onClick={() => { setImageFile(null); setImagePreview(null); if (fileRef.current) fileRef.current.value = '' }}
+                    className="absolute top-2 right-2 bg-black/50 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs"
+                  >✕</button>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => fileRef.current?.click()}
+                  className="w-full py-8 rounded-xl border-2 border-dashed border-stone-200 text-stone-400 text-sm hover:border-stone-300 hover:text-stone-500 transition-colors"
+                >
+                  📎 タップして画像を選択
+                </button>
+              )}
             </div>
 
             <button

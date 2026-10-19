@@ -79,8 +79,13 @@ export default function RestaurantDetailPage() {
             </Link>
             <h1 className="font-bold text-stone-800 truncate">{restaurant.name}</h1>
           </div>
-          {isOwner && (
-            <div className="flex gap-2 shrink-0">
+          <div className="flex gap-2 shrink-0 items-center">
+            <Link
+              href="/feedback"
+              className="text-xs text-stone-500 hover:text-stone-700 px-2 py-1.5 rounded-lg hover:bg-stone-100 transition-colors"
+              title="フィードバック"
+            >💬</Link>
+            {isOwner && (<>
               <Link
                 href={`/restaurants/${id}/edit`}
                 className="text-xs font-medium text-emerald-600 hover:text-emerald-700 px-3 py-1.5 rounded-lg hover:bg-emerald-50 transition-colors"
@@ -94,8 +99,8 @@ export default function RestaurantDetailPage() {
               >
                 {deleting ? '削除中…' : '削除'}
               </button>
-            </div>
-          )}
+            </>)}
+          </div>
         </div>
       </header>
 
