@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 
 interface UserInfo {
   name?: string | null
@@ -17,6 +18,7 @@ export default function HeaderMenu() {
   const [isAdmin, setIsAdmin] = useState(false)
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
+  const pathname = usePathname()
 
   useEffect(() => {
     fetch('/api/auth/session')
@@ -71,7 +73,7 @@ export default function HeaderMenu() {
           <Link href="/chain-memos" className={itemClass} onClick={() => setOpen(false)}>
             <span>📝</span>困ったときメモ
           </Link>
-          <Link href="/feedback" className={itemClass} onClick={() => setOpen(false)}>
+          <Link href={`/feedback?from=${encodeURIComponent(pathname)}`} className={itemClass} onClick={() => setOpen(false)}>
             <span>💬</span>フィードバックを送る
           </Link>
           {isAdmin && (

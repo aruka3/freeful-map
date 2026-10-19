@@ -81,7 +81,7 @@ export default function RestaurantDetailPage() {
           </div>
           <div className="flex gap-2 shrink-0 items-center">
             <Link
-              href="/feedback"
+              href={`/feedback?from=${encodeURIComponent(`/restaurants/${id}`)}`}
               className="text-xs text-stone-500 hover:text-stone-700 px-2 py-1.5 rounded-lg hover:bg-stone-100 transition-colors"
               title="フィードバック"
             >💬</Link>

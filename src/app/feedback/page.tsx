@@ -5,6 +5,26 @@ import Link from 'next/link'
 
 const MAX_IMAGES = 5
 
+async function shrinkImage(file: File): Promise<Blob> {
+  try {
+    const bitmap = await createImageBitmap(file)
+    const scale = Math.min(1, 1600 / Math.max(bitmap.width, bitmap.height))
+    const canvas = document.createElement('canvas')
+    canvas.width = Math.round(bitmap.width * scale)
+    canvas.height = Math.round(bitmap.height * scale)
+    canvas.getContext('2d')!.drawImage(bitmap, 0, 0, canvas.width, canvas.height)
+    const blob = await new Promise<Blob | null>((res) => canvas.toBlob(res, 'image/jpeg', 0.85))
+    return blob ?? file
+  } catch {
+    return file
+  }
+}
+
+function fromPath() {
+  const from = new URLSearchParams(window.location.search).get('from')
+  return from && from.startsWith('/') && !from.startsWith('//') ? from : null
+}
+
 export default function FeedbackPage() {
   const [name, setName] = useState('')
   const [contact, setContact] = useState('')
@@ -12,6 +32,7 @@ export default function FeedbackPage() {
   const [images, setImages] = useState<{ file: File; preview: string }[]>([])
   const [submitting, setSubmitting] = useState(false)
   const [done, setDone] = useState(false)
+  const [sentImages, setSentImages] = useState(0)
   const [error, setError] = useState('')
   const fileRef = useRef<HTMLInputElement>(null)
 
@@ -39,7 +60,7 @@ export default function FeedbackPage() {
       const imageUrls: string[] = []
       for (const { file } of images) {
         const fd = new FormData()
-        fd.append('file', file)
+        fd.append('file', await shrinkImage(file), 'photo.jpg')
         const up = await fetch('/api/feedback/upload', { method: 'POST', body: fd })
         if (!up.ok) {
           const data = await up.json().catch(() => ({}))
@@ -58,10 +79,11 @@ export default function FeedbackPage() {
           contact,
           message,
           imageUrls,
-          pageUrl: document.referrer || window.location.href,
+          pageUrl: fromPath() ? window.location.origin + fromPath() : null,
         }),
       })
       if (!res.ok) throw new Error()
+      setSentImages(imageUrls.length)
       setDone(true)
     } catch {
       setError('送信に失敗しました。しばらくしてからもう一度お試しください。')
@@ -87,7 +109,9 @@ export default function FeedbackPage() {
           <div className="text-center py-16 space-y-4">
             <p className="text-4xl">🌿</p>
             <p className="font-bold text-stone-800">ありがとうございます！</p>
-            <p className="text-sm text-stone-500">フィードバックを受け取りました。</p>
+            <p className="text-sm text-stone-500">
+              フィードバックを受け取りました。{sentImages > 0 && `（画像${sentImages}枚つき）`}
+            </p>
             <Link href="/" className="inline-block mt-4 text-sm text-emerald-600 hover:underline">
               地図に戻る →
             </Link>

@@ -60,7 +60,7 @@ export default function ChainMemosPage() {
           </div>
           <div className="flex items-center gap-2">
           <Link
-            href="/feedback"
+            href="/feedback?from=%2Fchain-memos"
             className="text-xs text-stone-500 hover:text-stone-700 px-2 py-1.5 rounded-lg hover:bg-stone-100 transition-colors"
             title="フィードバック"
           >💬</Link>
