@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { sql } from '@/lib/db'
 import { resolvePrefecture } from '@/lib/prefecture'
 import { auth } from '@/auth'
+import { toPublicRestaurant } from '@/lib/publicRestaurant'
 
 export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -20,11 +21,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
 
   if (!rows.length) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
-  const r = rows[0] as Record<string, unknown>
-  return NextResponse.json({
-    ...r,
-    memo_private: r.user_email && r.user_email === userEmail ? r.memo_private : null,
-  })
+  return NextResponse.json(toPublicRestaurant(rows[0], userEmail))
 }
 
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -32,7 +29,6 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   const session = await auth()
   const userEmail = session?.user?.email ?? null
   if (!userEmail) return NextResponse.json({ error: 'ログインが必要です' }, { status: 401 })
-  const sessionId = req.headers.get('x-session-id') ?? ''
 
   const existing = await sql`SELECT id, user_email FROM restaurants WHERE id = ${id}`
   if (!existing.length) return NextResponse.json({ error: 'Not found' }, { status: 404 })
@@ -60,7 +56,6 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       status = ${status},
       tags = ${tags ?? []},
       prefecture = ${prefecture},
-      session_id = ${sessionId || body.session_id || ''},
       user_email = COALESCE(${userEmail}, user_email),
       updated_at = NOW()
     WHERE id = ${id}
@@ -74,7 +69,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     `
   }
 
-  return NextResponse.json(rows[0])
+  return NextResponse.json(toPublicRestaurant(rows[0], userEmail))
 }
 
 export async function DELETE(_req: Request, { params }: { params: Promise<{ id: string }> }) {

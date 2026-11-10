@@ -15,7 +15,7 @@ export interface Restaurant {
   status: RestaurantStatus
   tags: string[]
   session_id: string
-  user_email?: string | null
+  is_owner?: boolean
   prefecture?: string | null
   user_status?: RestaurantStatus | null
 }

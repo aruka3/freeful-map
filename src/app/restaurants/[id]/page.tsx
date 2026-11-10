@@ -49,7 +49,7 @@ export default function RestaurantDetailPage() {
     if (!restaurant) return
     if (!confirm('このお店の記録を削除しますか？')) return
     setDeleting(true)
-    await deleteRestaurant(id, restaurant.session_id)
+    await deleteRestaurant(id)
     router.push('/')
   }
 
@@ -63,7 +63,7 @@ export default function RestaurantDetailPage() {
   if (!restaurant) return null
 
   const statusConfig = restaurant.user_status ? STATUS_CONFIG[restaurant.user_status] : null
-  const isOwner = !!(userEmail && restaurant.user_email === userEmail)
+  const isOwner = !!restaurant.is_owner
   const memoPublic = restaurant.memo_public ?? restaurant.comment
   const memoPrivate = restaurant.memo_private
 

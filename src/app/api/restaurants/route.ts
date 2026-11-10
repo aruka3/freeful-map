@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { sql } from '@/lib/db'
 import { resolvePrefecture } from '@/lib/prefecture'
 import { auth } from '@/auth'
+import { toPublicRestaurant } from '@/lib/publicRestaurant'
 
 export async function GET() {
   const session = await auth()
@@ -17,12 +18,7 @@ export async function GET() {
       `
     : await sql`SELECT *, NULL as user_status FROM restaurants ORDER BY created_at DESC`
 
-  const sanitized = rows.map((r: Record<string, unknown>) => ({
-    ...r,
-    memo_private: r.user_email && r.user_email === userEmail ? r.memo_private : null,
-  }))
-
-  return NextResponse.json(sanitized)
+  return NextResponse.json(rows.map((r) => toPublicRestaurant(r, userEmail)))
 }
 
 export async function POST(req: Request) {
@@ -57,5 +53,5 @@ export async function POST(req: Request) {
       ON CONFLICT (user_email, restaurant_id) DO UPDATE SET status = ${status}, updated_at = now()
     `
   }
-  return NextResponse.json({ ...newRestaurant, user_status: status ?? null }, { status: 201 })
+  return NextResponse.json({ ...toPublicRestaurant(newRestaurant, userEmail), user_status: status ?? null }, { status: 201 })
 }
