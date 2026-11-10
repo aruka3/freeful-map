@@ -52,7 +52,7 @@ export default function ChainMemoDetailPage() {
     if (!memo) return
     if (!confirm('このメモを削除しますか？')) return
     setDeleting(true)
-    await deleteChainMemo(id, memo.session_id)
+    await deleteChainMemo(id)
     router.push('/chain-memos')
   }
 
@@ -77,12 +77,14 @@ export default function ChainMemoDetailPage() {
             </Link>
             <h1 className="font-bold text-stone-800 truncate">{memo.name}</h1>
           </div>
+          {memo.can_edit && (
           <div className="flex items-center gap-1 shrink-0">
             <Link href={`/chain-memos/${id}/edit`} className="text-xs text-stone-500 hover:text-stone-700 px-3 py-1.5 rounded-lg hover:bg-stone-100 transition-colors font-medium">編集</Link>
             <button onClick={handleDelete} disabled={deleting} className="text-xs text-rose-400 hover:text-rose-600 px-3 py-1.5 rounded-lg hover:bg-rose-50 transition-colors font-medium">
               {deleting ? '削除中…' : '削除'}
             </button>
           </div>
+          )}
         </div>
       </header>
 

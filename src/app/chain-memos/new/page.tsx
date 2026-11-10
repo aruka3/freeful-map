@@ -1,10 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createChainMemo } from '@/lib/api'
-import { getSessionId } from '@/lib/session'
 import FieldLabel, { Input, Textarea } from '@/components/form/FieldLabel'
 
 export default function NewChainMemoPage() {
@@ -17,6 +16,15 @@ export default function NewChainMemoPage() {
   const [confirmedAt, setConfirmedAt] = useState('')
   const [officialUrl, setOfficialUrl] = useState('')
   const [memo, setMemo] = useState('')
+
+  useEffect(() => {
+    fetch('/api/auth/session')
+      .then((r) => r.json())
+      .then((data) => {
+        if (!data?.user?.email) window.location.href = '/login'
+      })
+      .catch(() => { window.location.href = '/login' })
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -34,7 +42,6 @@ export default function NewChainMemoPage() {
         confirmed_at: confirmedAt || null,
         official_url: officialUrl.trim() || null,
         memo: memo.trim() || null,
-        session_id: getSessionId(),
       })
       router.push(`/chain-memos/${created.id}`)
     } catch (err) {

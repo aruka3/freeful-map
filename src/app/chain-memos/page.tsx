@@ -116,10 +116,14 @@ export default function ChainMemosPage() {
                 </Link>
                 <div className="border-t border-stone-100 flex">
                   <Link href={`/chain-memos/${memo.id}`} className="flex-1 py-2.5 text-center text-xs text-stone-500 hover:text-emerald-600 hover:bg-stone-50 transition-colors font-medium">詳細</Link>
-                  <div className="w-px bg-stone-100" />
-                  <Link href={`/chain-memos/${memo.id}/edit`} className="flex-1 py-2.5 text-center text-xs text-stone-500 hover:text-emerald-600 hover:bg-stone-50 transition-colors font-medium">編集</Link>
-                  <div className="w-px bg-stone-100" />
-                  <DeleteButton memoId={memo.id} sessionId={memo.session_id} onDeleted={() => setMemos(prev => prev.filter(m => m.id !== memo.id))} />
+                  {memo.can_edit && (
+                    <>
+                      <div className="w-px bg-stone-100" />
+                      <Link href={`/chain-memos/${memo.id}/edit`} className="flex-1 py-2.5 text-center text-xs text-stone-500 hover:text-emerald-600 hover:bg-stone-50 transition-colors font-medium">編集</Link>
+                      <div className="w-px bg-stone-100" />
+                      <DeleteButton memoId={memo.id} onDeleted={() => setMemos(prev => prev.filter(m => m.id !== memo.id))} />
+                    </>
+                  )}
                 </div>
               </div>
             ))}
@@ -130,7 +134,7 @@ export default function ChainMemosPage() {
   )
 }
 
-function DeleteButton({ memoId, sessionId, onDeleted }: { memoId: string; sessionId: string; onDeleted: () => void }) {
+function DeleteButton({ memoId, onDeleted }: { memoId: string; onDeleted: () => void }) {
   const [deleting, setDeleting] = useState(false)
   const handleDelete = async (e: React.MouseEvent) => {
     e.preventDefault()
@@ -138,7 +142,7 @@ function DeleteButton({ memoId, sessionId, onDeleted }: { memoId: string; sessio
     setDeleting(true)
     try {
       const { deleteChainMemo } = await import('@/lib/api')
-      await deleteChainMemo(memoId, sessionId)
+      await deleteChainMemo(memoId)
       onDeleted()
     } catch {
       alert('削除に失敗しました')

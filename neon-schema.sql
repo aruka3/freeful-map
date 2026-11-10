@@ -55,3 +55,6 @@ INSERT INTO admins (email) VALUES ('sora.ao.ichi.11263182@gmail.com') ON CONFLIC
 
 -- 都道府県（住所、なければ緯度経度から判定）
 ALTER TABLE restaurants ADD COLUMN IF NOT EXISTS prefecture TEXT;
+
+-- 困ったときメモの作成者（編集・削除は本人と管理者のみ）
+ALTER TABLE chain_memos ADD COLUMN IF NOT EXISTS user_email TEXT;

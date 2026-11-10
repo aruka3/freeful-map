@@ -83,18 +83,12 @@ export async function updateChainMemo(
 ): Promise<ChainMemo> {
   const res = await apiFetch(`/api/chain-memos/${id}`, {
     method: 'PATCH',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-session-id': updates.session_id ?? '',
-    },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(updates),
   })
   return res.json()
 }
 
-export async function deleteChainMemo(id: string, sessionId: string): Promise<void> {
-  await apiFetch(`/api/chain-memos/${id}`, {
-    method: 'DELETE',
-    headers: { 'x-session-id': sessionId },
-  })
+export async function deleteChainMemo(id: string): Promise<void> {
+  await apiFetch(`/api/chain-memos/${id}`, { method: 'DELETE' })
 }

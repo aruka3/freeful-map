@@ -36,7 +36,7 @@ export interface ChainMemo {
   confirmed_at: string | null
   official_url: string | null
   memo: string | null
-  session_id: string
+  can_edit?: boolean
 }
 
-export type ChainMemoInsert = Omit<ChainMemo, 'id' | 'created_at' | 'updated_at'>
+export type ChainMemoInsert = Omit<ChainMemo, 'id' | 'created_at' | 'updated_at' | 'can_edit'>

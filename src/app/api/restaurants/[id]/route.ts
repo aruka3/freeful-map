@@ -31,6 +31,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   const { id } = await params
   const session = await auth()
   const userEmail = session?.user?.email ?? null
+  if (!userEmail) return NextResponse.json({ error: 'ログインが必要です' }, { status: 401 })
   const sessionId = req.headers.get('x-session-id') ?? ''
 
   const existing = await sql`SELECT id, user_email FROM restaurants WHERE id = ${id}`
@@ -80,6 +81,7 @@ export async function DELETE(_req: Request, { params }: { params: Promise<{ id: 
   const { id } = await params
   const session = await auth()
   const userEmail = session?.user?.email ?? null
+  if (!userEmail) return NextResponse.json({ error: 'ログインが必要です' }, { status: 401 })
 
   const existing = await sql`SELECT id, user_email FROM restaurants WHERE id = ${id}`
   if (!existing.length) return NextResponse.json({ error: 'Not found' }, { status: 404 })

@@ -18,19 +18,18 @@ export default function EditChainMemoPage() {
   const [confirmedAt, setConfirmedAt] = useState('')
   const [officialUrl, setOfficialUrl] = useState('')
   const [memo, setMemo] = useState('')
-  const [sessionId, setSessionId] = useState('')
 
   useEffect(() => {
     fetchChainMemo(id)
       .then((m) => {
         if (!m) { router.push('/chain-memos'); return }
+        if (!m.can_edit) { router.push(`/chain-memos/${id}`); return }
         setName(m.name)
         setAccommodations(m.accommodations)
         setCaveats(m.caveats ?? '')
         setConfirmedAt(m.confirmed_at ?? '')
         setOfficialUrl(m.official_url ?? '')
         setMemo(m.memo ?? '')
-        setSessionId(m.session_id)
       })
       .catch(() => router.push('/chain-memos'))
       .finally(() => setLoading(false))
@@ -52,7 +51,6 @@ export default function EditChainMemoPage() {
         confirmed_at: confirmedAt || null,
         official_url: officialUrl.trim() || null,
         memo: memo.trim() || null,
-        session_id: sessionId,
       })
       router.push(`/chain-memos/${id}`)
     } catch (err) {
